@@ -1,6 +1,7 @@
 "use client";
 
-import { Building2, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { LogoMark } from "@/components/shared/logo-mark";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -22,8 +23,8 @@ export function MobileHeader({ titulo, subtitulo }: Props) {
       className="md:hidden sticky top-0 z-40 bg-white border-b border-border px-4 py-3 flex items-center gap-3"
       style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}
     >
-      <div className="w-7 h-7 bg-sidebar rounded-md flex items-center justify-center flex-shrink-0">
-        <Building2 className="w-3.5 h-3.5 text-white" />
+      <div className="w-7 h-7 bg-sidebar rounded-md flex items-center justify-center flex-shrink-0 p-1">
+        <LogoMark />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-text leading-none">{titulo}</p>

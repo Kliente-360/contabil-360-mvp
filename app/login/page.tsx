@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Lock, Mail, AlertCircle, Zap } from "lucide-react";
+import { Lock, Mail, AlertCircle, Zap } from "lucide-react";
+import { LogoMark } from "@/components/shared/logo-mark";
 import { DEMO_CREDENTIAL } from "@/lib/mock-data";
 
 export default function LoginPage() {
@@ -39,8 +40,8 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-[480px] bg-sidebar flex-col justify-between p-12">
         <div>
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 bg-sidebar rounded-lg flex items-center justify-center p-1.5">
+              <LogoMark />
             </div>
             <span className="text-white text-lg font-semibold tracking-tight">
               Contabil 360
@@ -76,8 +77,8 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Logo mobile */}
           <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-            <div className="w-8 h-8 bg-sidebar rounded-lg flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 bg-sidebar rounded-lg flex items-center justify-center p-1.5">
+              <LogoMark />
             </div>
             <span className="text-text text-base font-semibold">Contabil 360</span>
           </div>
