@@ -8,10 +8,15 @@
     @apply border-border;
   }
 
+  html {
+    background-color: #111827; /* bleeds into status bar with black-translucent PWA */
+  }
+
   body {
     @apply bg-background text-text font-sans antialiased;
     font-size: 14px;
     line-height: 1.5;
+    padding-top: env(safe-area-inset-top); /* push content below transparent status bar */
   }
 
   h1 { @apply text-2xl font-semibold tracking-tight text-text; }
