@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Lock, Mail, AlertCircle } from "lucide-react";
+import { Building2, Lock, Mail, AlertCircle, Zap } from "lucide-react";
+import { DEMO_CREDENTIAL } from "@/lib/mock-data";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -87,6 +88,22 @@ export default function LoginPage() {
               Acesse o portal da sua empresa
             </p>
           </div>
+
+          {/* Acesso rápido demo */}
+          <button
+            type="button"
+            onClick={() => {
+              setEmail(DEMO_CREDENTIAL.email);
+              setPassword(DEMO_CREDENTIAL.password);
+            }}
+            className="w-full flex items-center gap-2 px-4 py-2.5 mb-6 border border-dashed border-border rounded-md text-xs text-text-muted hover:border-primary hover:text-primary transition-colors"
+          >
+            <Zap className="w-3.5 h-3.5 flex-shrink-0" />
+            <span>
+              <span className="font-medium">Acesso demo —</span>{" "}
+              Auto Center São Jorge Ltda
+            </span>
+          </button>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
