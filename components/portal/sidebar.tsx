@@ -36,7 +36,7 @@ export function Sidebar({ clienteNome, escritorioNome }: SidebarProps) {
   }
 
   return (
-    <aside className="w-60 bg-sidebar flex flex-col min-h-screen flex-shrink-0">
+    <aside className="hidden md:flex w-60 bg-sidebar flex-col min-h-screen flex-shrink-0">
       {/* Logo */}
       <div className="px-5 py-6 border-b border-white/8">
         <div className="flex items-center gap-2.5">

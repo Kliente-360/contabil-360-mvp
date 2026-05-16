@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifySession, COOKIE_NAME } from "@/lib/auth-demo";
 import { Sidebar } from "@/components/portal/sidebar";
+import { BottomNav } from "@/components/portal/bottom-nav";
 
 export default async function PortalLayout({
   children,
@@ -20,9 +21,10 @@ export default async function PortalLayout({
         clienteNome={session.clienteNome}
         escritorioNome={session.escritorioNome}
       />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pb-20 md:pb-0">
         {children}
       </main>
+      <BottomNav />
     </div>
   );
 }
