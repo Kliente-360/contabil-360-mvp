@@ -1,6 +1,6 @@
-import { TrendingUp, TrendingDown, DollarSign, BarChart2, MessageSquare, AlertTriangle } from "lucide-react";
-import { getKPIsMesAtual, DRE_MESES, TICKETS } from "@/lib/mock-data";
-import { formatCurrency, formatCurrencyCompact } from "@/lib/utils";
+import { TrendingUp, TrendingDown, DollarSign, BarChart2, MessageSquare, AlertTriangle, CalendarClock } from "lucide-react";
+import { getKPIsMesAtual, DRE_MESES, TICKETS, EVENTOS_CALENDARIO } from "@/lib/mock-data";
+import { formatCurrencyCompact } from "@/lib/utils";
 import { EvolucaoChart } from "@/components/portal/evolucao-chart";
 import { MobileHeader } from "@/components/portal/mobile-header";
 import { agruparPorPeriodo } from "@/lib/analytics";
@@ -9,6 +9,12 @@ export default function InicioPage() {
   const kpis = getKPIsMesAtual();
   const ticketsAbertos = TICKETS.filter((t) => t.status !== "resolvido").length;
   const dadosEvolucao = agruparPorPeriodo(DRE_MESES.slice(-12), "mensal");
+
+  const MES_ATUAL = "2026-05";
+  const obrigacoesAberto = EVENTOS_CALENDARIO.filter(
+    (e) => e.data.startsWith(MES_ATUAL) && (e.status === "pendente" || e.status === "vencido")
+  );
+  const totalObrigacoes = obrigacoesAberto.reduce((s, e) => s + (e.valor ?? 0), 0);
 
   const cards = [
     {
@@ -120,24 +126,29 @@ export default function InicioPage() {
               )}
             </div>
 
-            {/* Resumo */}
+            {/* Obrigações em aberto */}
             <div className="bg-white border border-border rounded-lg p-4 md:p-5">
-              <h3 className="text-sm font-semibold text-text mb-3">Resumo</h3>
-              <div className="space-y-2">
-                {[
-                  { label: "Receita", valor: kpis.receita.valor, pos: true },
-                  { label: "Impostos", valor: -kpis.impostos.valor, pos: false },
-                  { label: "EBITDA", valor: kpis.ebitda.valor, pos: true },
-                  { label: "Lucro líq.", valor: kpis.lucroLiquido.valor, pos: kpis.lucroLiquido.valor >= 0 },
-                ].map(({ label, valor, pos }) => (
-                  <div key={label} className="flex justify-between items-center">
-                    <span className="text-xs text-text-muted">{label}</span>
-                    <span className={`text-xs font-semibold ${pos ? "text-text" : "text-error"}`}>
-                      {valor < 0 ? "-" : ""}{formatCurrency(Math.abs(valor))}
-                    </span>
-                  </div>
-                ))}
+              <div className="flex items-center gap-2 mb-2 md:mb-3">
+                <CalendarClock className="w-4 h-4 text-text-muted" />
+                <h3 className="text-sm font-semibold text-text">Obrigações</h3>
               </div>
+              {obrigacoesAberto.length > 0 ? (
+                <>
+                  <p className="text-2xl font-semibold text-text mb-0.5">
+                    {obrigacoesAberto.length}
+                  </p>
+                  <p className="text-xs text-text-muted mb-2">
+                    {obrigacoesAberto.length === 1 ? "pendente este mês" : "pendentes este mês"}
+                  </p>
+                  {totalObrigacoes > 0 && (
+                    <p className="text-xs font-semibold text-warning">
+                      {formatCurrencyCompact(totalObrigacoes)} a pagar
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-success font-medium">Em dia este mês</p>
+              )}
             </div>
           </div>
         </div>
