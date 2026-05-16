@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-text font-sans antialiased;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  h1 { @apply text-2xl font-semibold tracking-tight text-text; }
+  h2 { @apply text-xl font-semibold tracking-tight text-text; }
+  h3 { @apply text-base font-semibold text-text; }
+  h4 { @apply text-sm font-semibold text-text; }
+
+  p { @apply text-sm text-text; }
+}
+
+@layer components {
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors;
+  }
+
+  .sidebar-link.active {
+    @apply text-white bg-white/10;
+  }
+
+  .kpi-card {
+    @apply bg-white border border-border rounded-lg p-5;
+  }
+
+  .data-table th {
+    @apply text-xs font-semibold text-text-muted uppercase tracking-wider px-4 py-3 text-left bg-surface border-b border-border;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 text-sm text-text border-b border-border;
+  }
+
+  .data-table tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .data-table tr:hover td {
+    @apply bg-surface;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-primary-light text-success;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-yellow-50 text-warning;
+  }
+
+  .badge-error {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-error;
+  }
+
+  .badge-neutral {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-surface text-text-muted;
+  }
+}
