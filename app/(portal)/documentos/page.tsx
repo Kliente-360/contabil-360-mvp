@@ -1,4 +1,7 @@
-import { FileText, Download, FileCheck, FileSignature, ScrollText, Receipt, BookOpen } from "lucide-react";
+"use client";
+
+import { useState, useMemo } from "react";
+import { FileText, Download, FileCheck, FileSignature, ScrollText, Receipt, BookOpen, Search } from "lucide-react";
 import { DOCUMENTOS } from "@/lib/mock-data";
 import { formatDate, formatCompetencia } from "@/lib/utils";
 import { MobileHeader } from "@/components/portal/mobile-header";
@@ -13,29 +16,55 @@ const TIPO_CONFIG = {
   ato_constitutivo: { label: "Ato Constitutivo", icon: BookOpen, badge: "badge-neutral" },
 };
 
+const SORTED = [...DOCUMENTOS].sort((a, b) => b.enviadoEm.localeCompare(a.enviadoEm));
+
 function formatTamanho(kb: number): string {
   if (kb >= 1024) return `${(kb / 1024).toFixed(1)} MB`;
   return `${kb} KB`;
 }
 
 export default function DocumentosPage() {
+  const [search, setSearch] = useState("");
+
+  const docs = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return SORTED;
+    return SORTED.filter((d) => d.nome.toLowerCase().includes(q));
+  }, [search]);
+
   return (
     <>
       <MobileHeader titulo="Documentos" />
       <div className="p-4 md:p-8 max-w-5xl mx-auto">
-        <div className="hidden md:block mb-8">
-          <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">
-            Arquivo
-          </p>
-          <h1 className="text-2xl font-semibold text-text">Documentos</h1>
+        <div className="hidden md:flex items-end justify-between mb-8">
+          <div>
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Arquivo</p>
+            <h1 className="text-2xl font-semibold text-text">Documentos</h1>
+          </div>
         </div>
+
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar documento..."
+            className="w-full pl-9 pr-4 py-2.5 border border-border rounded-lg bg-white text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+            style={{ fontSize: "16px" }}
+          />
+        </div>
+
+        {docs.length === 0 && (
+          <div className="py-12 text-center">
+            <p className="text-sm text-text-muted">Nenhum documento encontrado para "{search}".</p>
+          </div>
+        )}
 
         {/* Mobile: lista de cards */}
         <div className="md:hidden space-y-2">
-          {[...DOCUMENTOS].sort((a, b) => {
-            const cmp = b.competencia.localeCompare(a.competencia);
-            return cmp !== 0 ? cmp : b.enviadoEm.localeCompare(a.enviadoEm);
-          }).map((doc) => {
+          {docs.map((doc) => {
             const config = TIPO_CONFIG[doc.tipo];
             const Icon = config.icon;
             return (
@@ -44,14 +73,12 @@ export default function DocumentosPage() {
                   <Icon className="w-4 h-4 text-text-muted" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text leading-snug truncate">
-                    {doc.nome}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
+                  <p className="text-sm font-medium text-text leading-snug truncate">{doc.nome}</p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <span className={config.badge}>{config.label}</span>
-                    <span className="text-xs text-text-muted">
-                      {formatCompetencia(doc.competencia)}
-                    </span>
+                    <span className="text-xs text-text-muted">{formatCompetencia(doc.competencia)}</span>
+                    <span className="text-xs text-text-muted">·</span>
+                    <span className="text-xs text-text-muted">{formatDate(doc.enviadoEm)}</span>
                   </div>
                 </div>
                 <button className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md border border-border hover:bg-surface transition-colors">
@@ -64,8 +91,11 @@ export default function DocumentosPage() {
 
         {/* Desktop: tabela */}
         <div className="hidden md:block bg-white border border-border rounded-lg overflow-hidden">
-          <div className="px-5 py-4 border-b border-border">
-            <p className="text-sm font-semibold text-text">{DOCUMENTOS.length} documentos</p>
+          <div className="px-5 py-3.5 border-b border-border">
+            <p className="text-sm text-text-muted">
+              {docs.length} {docs.length === 1 ? "documento" : "documentos"}
+              {search && ` para "${search}"`}
+            </p>
           </div>
           <table className="w-full data-table">
             <thead>
@@ -73,16 +103,13 @@ export default function DocumentosPage() {
                 <th>Documento</th>
                 <th>Tipo</th>
                 <th>Competência</th>
-                <th>Enviado em</th>
+                <th>Disponibilizado</th>
                 <th>Tamanho</th>
                 <th className="text-right">Ação</th>
               </tr>
             </thead>
             <tbody>
-              {[...DOCUMENTOS].sort((a, b) => {
-                const cmp = b.competencia.localeCompare(a.competencia);
-                return cmp !== 0 ? cmp : b.enviadoEm.localeCompare(a.enviadoEm);
-              }).map((doc) => {
+              {docs.map((doc) => {
                 const config = TIPO_CONFIG[doc.tipo];
                 const Icon = config.icon;
                 return (
@@ -98,10 +125,8 @@ export default function DocumentosPage() {
                     <td><span className={config.badge}>{config.label}</span></td>
                     <td className="text-text-muted">{formatCompetencia(doc.competencia)}</td>
                     <td className="text-text-muted">
-                      <div>
-                        <p>{formatDate(doc.enviadoEm)}</p>
-                        <p className="text-xs">{doc.enviadoPor}</p>
-                      </div>
+                      <p>{formatDate(doc.enviadoEm)}</p>
+                      <p className="text-xs">{doc.enviadoPor}</p>
                     </td>
                     <td className="text-text-muted">{formatTamanho(doc.tamanhoKb)}</td>
                     <td className="text-right">
