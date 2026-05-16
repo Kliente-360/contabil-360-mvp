@@ -3,10 +3,12 @@ import { getKPIsMesAtual, DRE_MESES, TICKETS } from "@/lib/mock-data";
 import { formatCurrency, formatCurrencyCompact } from "@/lib/utils";
 import { EvolucaoChart } from "@/components/portal/evolucao-chart";
 import { MobileHeader } from "@/components/portal/mobile-header";
+import { agruparPorPeriodo } from "@/lib/analytics";
 
 export default function InicioPage() {
   const kpis = getKPIsMesAtual();
   const ticketsAbertos = TICKETS.filter((t) => t.status !== "resolvido").length;
+  const dadosEvolucao = agruparPorPeriodo(DRE_MESES.slice(-12), "mensal");
 
   const cards = [
     {
@@ -94,9 +96,9 @@ export default function InicioPage() {
           <div className="lg:col-span-2 bg-white border border-border rounded-lg p-4 md:p-5">
             <div className="mb-3 md:mb-4">
               <h3 className="text-sm font-semibold text-text">Evolução Financeira</h3>
-              <p className="text-xs text-text-muted">Jan – Jun 2024</p>
+              <p className="text-xs text-text-muted">Jan – Dez 2025</p>
             </div>
-            <EvolucaoChart dados={DRE_MESES} />
+            <EvolucaoChart dados={dadosEvolucao} periodo="mensal" />
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 md:gap-4">
