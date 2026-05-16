@@ -122,13 +122,39 @@ function LinhaMargem({ label, campo, dados }: {
   );
 }
 
+function acumularDados(dados: PeriodoAgrupado[]): PeriodoAgrupado[] {
+  let acc = { receita: 0, cmv: 0, lucroBruto: 0, despesasOp: 0, ebitda: 0, impostos: 0, lucroLiquido: 0 };
+  return dados.map((d) => {
+    acc = {
+      receita: acc.receita + d.receita,
+      cmv: acc.cmv + d.cmv,
+      lucroBruto: acc.lucroBruto + d.lucroBruto,
+      despesasOp: acc.despesasOp + d.despesasOp,
+      ebitda: acc.ebitda + d.ebitda,
+      impostos: acc.impostos + d.impostos,
+      lucroLiquido: acc.lucroLiquido + d.lucroLiquido,
+    };
+    return {
+      ...d,
+      ...acc,
+      margemEbitda: acc.receita > 0 ? (acc.ebitda / acc.receita) * 100 : 0,
+      margemLiquida: acc.receita > 0 ? (acc.lucroLiquido / acc.receita) * 100 : 0,
+      temNegativo: acc.ebitda < 0 || acc.lucroLiquido < 0,
+      varReceita: undefined,
+      varEbitda: undefined,
+      varLucroLiquido: undefined,
+    };
+  });
+}
+
 export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
   const [aba, setAba] = useState("dre");
   const [periodo, setPeriodo] = useState<Periodo>("mensal");
+  const [acumulado, setAcumulado] = useState(false);
 
   const dadosAgrupados = agruparPorPeriodo(dreMeses, periodo);
-  // No mensal, mostrar apenas os últimos 12 meses por padrão
-  const dadosExibidos = periodo === "mensal" ? dadosAgrupados.slice(-12) : dadosAgrupados;
+  const dadosBase = periodo === "mensal" ? dadosAgrupados.slice(-12) : dadosAgrupados;
+  const dadosExibidos = acumulado ? acumularDados(dadosBase) : dadosBase;
 
   const resumo2024 = resumoAnual(dreMeses, 2024);
   const resumo2025 = resumoAnual(DRE_MESES, 2025);
@@ -300,14 +326,29 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
                 <h3 className="text-sm font-semibold text-text">Evolução Financeira</h3>
                 <p className="text-xs text-text-muted">Jan/2024 – Dez/2025</p>
               </div>
-              <div className="flex bg-surface border border-border rounded-md p-0.5">
-                {PERIODOS.map((p) => (
-                  <button key={p.id} onClick={() => setPeriodo(p.id)}
-                    className={cn("px-3 py-1.5 text-xs font-medium rounded transition-colors",
-                      periodo === p.id ? "bg-white text-text shadow-sm border border-border" : "text-text-muted hover:text-text")}>
-                    {p.label}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setAcumulado(!acumulado)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md border transition-colors",
+                    acumulado
+                      ? "bg-primary-light border-primary/30 text-primary"
+                      : "bg-surface border-border text-text-muted hover:text-text"
+                  )}
+                >
+                  <span className={cn("w-2.5 h-2.5 rounded-sm border-[1.5px] flex-shrink-0 transition-colors",
+                    acumulado ? "bg-primary border-primary" : "border-text-muted")} />
+                  Acumulado
+                </button>
+                <div className="flex bg-surface border border-border rounded-md p-0.5">
+                  {PERIODOS.map((p) => (
+                    <button key={p.id} onClick={() => setPeriodo(p.id)}
+                      className={cn("px-3 py-1.5 text-xs font-medium rounded transition-colors",
+                        periodo === p.id ? "bg-white text-text shadow-sm border border-border" : "text-text-muted hover:text-text")}>
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <EvolucaoChart dados={dadosExibidos} periodo={periodo} />
@@ -315,8 +356,10 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
 
           {/* Tabela comparativa */}
           <div className="bg-white border border-border rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-              <p className="text-sm font-semibold text-text">Comparativo por período</p>
+            <div className="px-4 py-3 border-b border-border flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-text">
+                Comparativo por período{acumulado && <span className="text-text-muted font-normal"> — acumulado</span>}
+              </p>
               {dadosExibidos.some(d => d.temNegativo) && (
                 <span className="inline-flex items-center gap-1 text-xs text-warning bg-yellow-50 border border-yellow-100 px-2 py-0.5 rounded">
                   <AlertTriangle className="w-3 h-3" />
@@ -361,6 +404,11 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
 
       {/* ── Balanço ────────────────────────────────────────────────────────── */}
       {aba === "balanco" && (
+        <div>
+          <p className="text-xs text-text-muted mb-4">
+            Posição patrimonial em{" "}
+            <span className="font-medium text-text">{formatCompetencia(balanco.competencia)}</span>
+          </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {[
             { titulo: "Ativo", total: balanco.ativo.total, grupos: balanco.ativo.grupos, totalClass: "text-success" },
@@ -389,6 +437,7 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
               </div>
             </div>
           ))}
+        </div>
         </div>
       )}
     </div>
