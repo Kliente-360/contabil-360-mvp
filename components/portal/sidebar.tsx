@@ -42,7 +42,7 @@ export function Sidebar({ clienteNome, escritorioNome }: SidebarProps) {
       {/* Logo */}
       <div className="px-5 py-6 border-b border-white/8">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-sidebar rounded-lg flex items-center justify-center flex-shrink-0 p-1.5">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 p-1.5">
             <LogoMark />
           </div>
           <span className="text-white text-sm font-semibold tracking-tight">

@@ -19,10 +19,7 @@ export function MobileHeader({ titulo, subtitulo }: Props) {
   }
 
   return (
-    <div
-      className="md:hidden sticky top-0 z-40 bg-white border-b border-border px-4 py-3 flex items-center gap-3"
-      style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}
-    >
+    <div className="md:hidden sticky top-0 z-40 bg-white border-b border-border px-4 py-3 flex items-center gap-3">
       <div className="w-7 h-7 bg-sidebar rounded-md flex items-center justify-center flex-shrink-0 p-1">
         <LogoMark />
       </div>
