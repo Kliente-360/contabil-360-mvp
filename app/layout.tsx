@@ -12,6 +12,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Contabil 360",
   description: "Portal financeiro para empresas",
+  appleWebApp: {
+    capable: true,
+    title: "Contabil 360",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport = {
