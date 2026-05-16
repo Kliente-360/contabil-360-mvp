@@ -213,39 +213,46 @@ export default function CalendarioPage() {
           <p className="text-sm text-text-muted mt-1">Obrigações e pagamentos</p>
         </div>
 
-        {/* Stat cards — 3 cols, compact on mobile */}
-        <div className="grid grid-cols-3 gap-2 md:gap-3 mb-6">
+        {/* Stat cards */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-6">
+          {/* Em aberto */}
           <div className="bg-white border border-border rounded-lg p-3 md:p-4">
             <p className="text-[10px] md:text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">Em aberto</p>
             <div className="flex items-end gap-1.5">
-              <p className="text-xl md:text-2xl font-semibold text-text">{emAberto}</p>
+              <p className="text-2xl font-semibold text-text">{emAberto}</p>
               {emAberto > 0 && <AlertCircle className="w-3.5 h-3.5 text-warning mb-0.5" />}
             </div>
-            <p className="text-[10px] md:text-xs text-text-muted mt-1 hidden sm:block">pendente ou vencido</p>
-          </div>
-
-          <div className="bg-white border border-border rounded-lg p-3 md:p-4">
-            <p className="text-[10px] md:text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">Este mês</p>
-            <p className="text-base md:text-2xl font-semibold text-text tabular-nums">
-              {totalPendentesMes > 0 ? formatCurrency(totalPendentesMes) : "—"}
+            <p className="text-[10px] md:text-xs text-text-muted mt-1">
+              {emAberto === 1 ? "obrigação" : "obrigações"}
             </p>
-            <p className="text-[10px] md:text-xs text-text-muted mt-1 hidden sm:block">a pagar em mai/26</p>
           </div>
 
+          {/* Próx. vencimento */}
           <div className="bg-white border border-border rounded-lg p-3 md:p-4">
             <p className="text-[10px] md:text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">Próx. venc.</p>
             {proximoVencimento ? (
               <>
-                <p className="text-xl md:text-2xl font-semibold text-text tabular-nums">
+                <p className="text-2xl font-semibold text-text tabular-nums">
                   {formatDayMonth(proximoVencimento.data)}
                 </p>
-                <p className="text-[10px] md:text-xs text-text-muted mt-1 truncate hidden sm:block">
+                <p className="text-[10px] md:text-xs text-text-muted mt-1 truncate">
                   {proximoVencimento.titulo.split(" — ")[0]}
                 </p>
               </>
             ) : (
-              <p className="text-xl md:text-2xl font-semibold text-text">—</p>
+              <p className="text-2xl font-semibold text-text">—</p>
             )}
+          </div>
+
+          {/* Este mês — largura total no mobile */}
+          <div className="col-span-2 md:col-span-1 bg-white border border-border rounded-lg p-3 md:p-4">
+            <p className="text-[10px] md:text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">Este mês</p>
+            <p className="text-2xl font-semibold text-text tabular-nums">
+              {totalPendentesMes > 0
+                ? `R$ ${(totalPendentesMes / 1000).toFixed(1).replace(".", ",")}k`
+                : "—"}
+            </p>
+            <p className="text-[10px] md:text-xs text-text-muted mt-1">a pagar em mai/26</p>
           </div>
         </div>
 

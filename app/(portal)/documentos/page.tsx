@@ -32,7 +32,10 @@ export default function DocumentosPage() {
 
         {/* Mobile: lista de cards */}
         <div className="md:hidden space-y-2">
-          {[...DOCUMENTOS].sort((a, b) => b.enviadoEm.localeCompare(a.enviadoEm)).map((doc) => {
+          {[...DOCUMENTOS].sort((a, b) => {
+            const cmp = b.competencia.localeCompare(a.competencia);
+            return cmp !== 0 ? cmp : b.enviadoEm.localeCompare(a.enviadoEm);
+          }).map((doc) => {
             const config = TIPO_CONFIG[doc.tipo];
             const Icon = config.icon;
             return (
@@ -76,7 +79,10 @@ export default function DocumentosPage() {
               </tr>
             </thead>
             <tbody>
-              {[...DOCUMENTOS].sort((a, b) => b.enviadoEm.localeCompare(a.enviadoEm)).map((doc) => {
+              {[...DOCUMENTOS].sort((a, b) => {
+                const cmp = b.competencia.localeCompare(a.competencia);
+                return cmp !== 0 ? cmp : b.enviadoEm.localeCompare(a.enviadoEm);
+              }).map((doc) => {
                 const config = TIPO_CONFIG[doc.tipo];
                 const Icon = config.icon;
                 return (
