@@ -405,8 +405,8 @@ export default function PrintRelatorio() {
           border: 1px solid #E5E7EB;
           border-left: 3px solid #166534;
           border-radius: 3px;
-          padding: 7px 10px;
-          margin-top: 8px;
+          padding: 5px 10px;
+          margin-top: 10px;
         }
         .nota-title {
           font-size: 7pt;
@@ -414,12 +414,12 @@ export default function PrintRelatorio() {
           color: #166534;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          margin-bottom: 4px;
+          margin-bottom: 2px;
         }
         .nota p {
           font-size: 8pt;
           color: #374151;
-          line-height: 1.5;
+          line-height: 1.4;
         }
 
         /* BALANÇO */
