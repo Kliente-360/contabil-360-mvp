@@ -182,13 +182,27 @@ export default function CalendarioPage() {
 
   // Stat cards — computed from all events
   const emAberto = EVENTOS_CALENDARIO.filter(e => e.status === "pendente" || e.status === "vencido").length;
-  const mesMesAtual = HOJE.slice(0, 7);
-  const totalPendentesMes = EVENTOS_CALENDARIO
-    .filter(e => e.status === "pendente" && e.data.startsWith(mesMesAtual) && e.valor)
+  const mesMesAtual = HOJE.slice(0, 7); // "2026-05"
+  const mesAnterior = displayMonth === 1
+    ? `${displayYear - 1}-12`
+    : `${displayYear}-${String(displayMonth - 1).padStart(2, "0")}`;
+
+  const totalAPagarMes = EVENTOS_CALENDARIO
+    .filter(e => (e.status === "pendente" || e.status === "vencido") && e.data.startsWith(mesMesAtual) && e.valor)
     .reduce((s, e) => s + (e.valor ?? 0), 0);
+  const totalPagoAnterior = EVENTOS_CALENDARIO
+    .filter(e => e.status === "pago" && e.data.startsWith(mesAnterior) && e.valor)
+    .reduce((s, e) => s + (e.valor ?? 0), 0);
+
   const proximoVencimento = EVENTOS_CALENDARIO
     .filter(e => (e.status === "pendente" || e.status === "agendado") && e.data >= HOJE)
     .sort((a, b) => a.data.localeCompare(b.data))[0] ?? null;
+
+  function fmtK(val: number) {
+    return val >= 1000
+      ? `R$ ${(val / 1000).toFixed(1).replace(".", ",")}k`
+      : `R$ ${val.toFixed(0)}`;
+  }
 
   // Events for the displayed month
   const displayKey = `${displayYear}-${String(displayMonth).padStart(2, "0")}`;
@@ -213,8 +227,8 @@ export default function CalendarioPage() {
           <p className="text-sm text-text-muted mt-1">Obrigações e pagamentos</p>
         </div>
 
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-6">
+        {/* Stat cards — 2×2 grid */}
+        <div className="grid grid-cols-2 gap-2 md:gap-3 mb-6">
           {/* Em aberto */}
           <div className="bg-white border border-border rounded-lg p-3 md:p-4">
             <p className="text-[10px] md:text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">Em aberto</p>
@@ -244,15 +258,26 @@ export default function CalendarioPage() {
             )}
           </div>
 
-          {/* Este mês — largura total no mobile */}
-          <div className="col-span-2 md:col-span-1 bg-white border border-border rounded-lg p-3 md:p-4">
-            <p className="text-[10px] md:text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">Este mês</p>
-            <p className="text-2xl font-semibold text-text tabular-nums">
-              {totalPendentesMes > 0
-                ? `R$ ${(totalPendentesMes / 1000).toFixed(1).replace(".", ",")}k`
-                : "—"}
+          {/* Pago mês anterior */}
+          <div className="bg-white border border-border rounded-lg p-3 md:p-4">
+            <p className="text-[10px] md:text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">
+              Pago — {MES_ABREV[parseInt(mesAnterior.slice(5, 7)) - 1]}/{mesAnterior.slice(2, 4)}
             </p>
-            <p className="text-[10px] md:text-xs text-text-muted mt-1">a pagar em mai/26</p>
+            <p className="text-2xl font-semibold text-success tabular-nums">
+              {totalPagoAnterior > 0 ? fmtK(totalPagoAnterior) : "—"}
+            </p>
+            <p className="text-[10px] md:text-xs text-text-muted mt-1">mês anterior</p>
+          </div>
+
+          {/* A pagar este mês */}
+          <div className="bg-white border border-border rounded-lg p-3 md:p-4">
+            <p className="text-[10px] md:text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">
+              A pagar — {MES_ABREV[parseInt(mesMesAtual.slice(5, 7)) - 1]}/{mesMesAtual.slice(2, 4)}
+            </p>
+            <p className="text-2xl font-semibold text-text tabular-nums">
+              {totalAPagarMes > 0 ? fmtK(totalAPagarMes) : "—"}
+            </p>
+            <p className="text-[10px] md:text-xs text-text-muted mt-1">pendente este mês</p>
           </div>
         </div>
 
