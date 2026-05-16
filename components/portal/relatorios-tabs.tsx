@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, FileDown, Share2 } from "lucide-react";
 import { cn, formatCurrency, formatCurrencyCompact, formatCompetencia } from "@/lib/utils";
 import { agruparPorPeriodo, resumoAnual, type Periodo, type PeriodoAgrupado } from "@/lib/analytics";
-import { EvolucaoChart } from "./evolucao-chart";
-import { DRE_MESES, CLIENTE, ESCRITORIO } from "@/lib/mock-data";
+const EvolucaoChart = dynamic(() => import("./evolucao-chart").then(m => ({ default: m.EvolucaoChart })), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-surface animate-pulse rounded-lg" />,
+});
+import { CLIENTE, ESCRITORIO } from "@/lib/mock-data";
 import type { DREMes } from "@/lib/mock-data";
 
 type DREDetalhe = typeof import("@/lib/mock-data").DRE_DETALHE;
@@ -152,21 +156,32 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
   const [periodo, setPeriodo] = useState<Periodo>("mensal");
   const [acumulado, setAcumulado] = useState(false);
 
-  const dadosAgrupados = agruparPorPeriodo(dreMeses, periodo);
-  const dadosBase = periodo === "mensal" ? dadosAgrupados.slice(-12) : dadosAgrupados;
-  const dadosExibidos = acumulado ? acumularDados(dadosBase) : dadosBase;
+  const dadosAgrupados = useMemo(
+    () => agruparPorPeriodo(dreMeses, periodo),
+    [dreMeses, periodo]
+  );
+  const dadosExibidos = useMemo(() => {
+    const base = periodo === "mensal" ? dadosAgrupados.slice(-12) : dadosAgrupados;
+    return acumulado ? acumularDados(base) : base;
+  }, [dadosAgrupados, periodo, acumulado]);
 
-  const resumo2024 = resumoAnual(dreMeses, 2024);
-  const resumo2025 = resumoAnual(DRE_MESES, 2025);
-  const crescimentoReceita = ((resumo2025.receita - resumo2024.receita) / resumo2024.receita) * 100;
-  const crescimentoEbitda = ((resumo2025.ebitda - resumo2024.ebitda) / resumo2024.ebitda) * 100;
+  const { resumo2024, resumo2025, crescimentoReceita, crescimentoEbitda } = useMemo(() => {
+    const r2024 = resumoAnual(dreMeses, 2024);
+    const r2025 = resumoAnual(dreMeses, 2025);
+    return {
+      resumo2024: r2024,
+      resumo2025: r2025,
+      crescimentoReceita: ((r2025.receita - r2024.receita) / r2024.receita) * 100,
+      crescimentoEbitda: ((r2025.ebitda - r2024.ebitda) / r2024.ebitda) * 100,
+    };
+  }, [dreMeses]);
 
   function handleExport() {
     window.open("/print/relatorio", "_blank");
   }
 
   function handleShare() {
-    const r = resumoAnual(DRE_MESES, 2025);
+    const r = resumo2025;
     const margem = ((r.ebitda / r.receita) * 100).toFixed(1).replace(".", ",");
     const texto = encodeURIComponent(
       `Relatório Financeiro 2025 — ${CLIENTE.razaoSocial}\n` +
@@ -351,7 +366,9 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
                 </div>
               </div>
             </div>
-            <EvolucaoChart dados={dadosExibidos} periodo={periodo} />
+            <Suspense fallback={<div className="h-64 bg-surface animate-pulse rounded-lg" />}>
+              <EvolucaoChart dados={dadosExibidos} periodo={periodo} />
+            </Suspense>
           </div>
 
           {/* Tabela comparativa */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { FileText, Download, FileCheck, FileSignature, ScrollText, Receipt, BookOpen, Search } from "lucide-react";
 import { DOCUMENTOS } from "@/lib/mock-data";
 import { formatDate, formatCompetencia } from "@/lib/utils";
@@ -25,12 +25,20 @@ function formatTamanho(kb: number): string {
 
 export default function DocumentosPage() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  function handleSearch(value: string) {
+    setSearch(value);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }
 
   const docs = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = debouncedSearch.trim().toLowerCase();
     if (!q) return SORTED;
     return SORTED.filter((d) => d.nome.toLowerCase().includes(q));
-  }, [search]);
+  }, [debouncedSearch]);
 
   return (
     <>
@@ -49,7 +57,7 @@ export default function DocumentosPage() {
           <input
             type="search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             placeholder="Buscar documento..."
             className="w-full pl-9 pr-4 py-2.5 border border-border rounded-lg bg-white text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
             style={{ fontSize: "16px" }}

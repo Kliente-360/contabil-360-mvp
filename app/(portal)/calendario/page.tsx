@@ -10,6 +10,16 @@ import { formatCurrency } from "@/lib/utils";
 import { MobileHeader } from "@/components/portal/mobile-header";
 import { cn } from "@/lib/utils";
 
+// ─── Module-level constants ───────────────────────────────────────────────────
+
+const HOJE = "2026-05-16";
+
+function fmtK(val: number) {
+  return val >= 1000
+    ? `R$ ${(val / 1000).toFixed(1).replace(".", ",")}k`
+    : `R$ ${val.toFixed(0)}`;
+}
+
 // ─── Config ──────────────────────────────────────────────────────────────────
 
 const TIPO_CONFIG: Record<EventoCalendario["tipo"], { label: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -164,7 +174,6 @@ function MiniCalendario({ year, month, events, selectedDate, hoje, onSelectDate,
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CalendarioPage() {
-  const HOJE = "2026-05-16";
   const [displayYear, setDisplayYear] = useState(2026);
   const [displayMonth, setDisplayMonth] = useState(5);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -180,40 +189,54 @@ export default function CalendarioPage() {
     setSelectedDate(null);
   }
 
-  // Stat cards — computed from all events
-  const emAberto = EVENTOS_CALENDARIO.filter(e => e.status === "pendente" || e.status === "vencido").length;
-  const mesMesAtual = HOJE.slice(0, 7); // "2026-05"
-  const mesAnterior = displayMonth === 1
-    ? `${displayYear - 1}-12`
-    : `${displayYear}-${String(displayMonth - 1).padStart(2, "0")}`;
+  const mesMesAtual = HOJE.slice(0, 7);
 
-  const totalAPagarMes = EVENTOS_CALENDARIO
-    .filter(e => (e.status === "pendente" || e.status === "vencido") && e.data.startsWith(mesMesAtual) && e.valor)
-    .reduce((s, e) => s + (e.valor ?? 0), 0);
-  const totalPagoAnterior = EVENTOS_CALENDARIO
-    .filter(e => e.status === "pago" && e.data.startsWith(mesAnterior) && e.valor)
-    .reduce((s, e) => s + (e.valor ?? 0), 0);
+  const emAberto = useMemo(
+    () => EVENTOS_CALENDARIO.filter(e => e.status === "pendente" || e.status === "vencido").length,
+    []
+  );
 
-  const proximoVencimento = EVENTOS_CALENDARIO
-    .filter(e => (e.status === "pendente" || e.status === "agendado") && e.data >= HOJE)
-    .sort((a, b) => a.data.localeCompare(b.data))[0] ?? null;
+  const totalAPagarMes = useMemo(
+    () => EVENTOS_CALENDARIO
+      .filter(e => (e.status === "pendente" || e.status === "vencido") && e.data.startsWith(mesMesAtual) && e.valor)
+      .reduce((s, e) => s + (e.valor ?? 0), 0),
+    []
+  );
 
-  function fmtK(val: number) {
-    return val >= 1000
-      ? `R$ ${(val / 1000).toFixed(1).replace(".", ",")}k`
-      : `R$ ${val.toFixed(0)}`;
-  }
+  const proximoVencimento = useMemo(
+    () => EVENTOS_CALENDARIO
+      .filter(e => (e.status === "pendente" || e.status === "agendado") && e.data >= HOJE)
+      .sort((a, b) => a.data.localeCompare(b.data))[0] ?? null,
+    []
+  );
 
-  // Events for the displayed month
-  const displayKey = `${displayYear}-${String(displayMonth).padStart(2, "0")}`;
-  const eventsInMonth = EVENTOS_CALENDARIO
-    .filter(e => e.data.startsWith(displayKey))
-    .sort((a, b) => a.data.localeCompare(b.data));
+  const mesAnterior = useMemo(() =>
+    displayMonth === 1
+      ? `${displayYear - 1}-12`
+      : `${displayYear}-${String(displayMonth - 1).padStart(2, "0")}`,
+    [displayMonth, displayYear]
+  );
 
-  // Events to show in list (filtered by selected date if any)
-  const eventsToShow = selectedDate
-    ? EVENTOS_CALENDARIO.filter(e => e.data === selectedDate)
-    : eventsInMonth;
+  const totalPagoAnterior = useMemo(
+    () => EVENTOS_CALENDARIO
+      .filter(e => e.status === "pago" && e.data.startsWith(mesAnterior) && e.valor)
+      .reduce((s, e) => s + (e.valor ?? 0), 0),
+    [mesAnterior]
+  );
+
+  const eventsInMonth = useMemo(() => {
+    const displayKey = `${displayYear}-${String(displayMonth).padStart(2, "0")}`;
+    return EVENTOS_CALENDARIO
+      .filter(e => e.data.startsWith(displayKey))
+      .sort((a, b) => a.data.localeCompare(b.data));
+  }, [displayYear, displayMonth]);
+
+  const eventsToShow = useMemo(
+    () => selectedDate
+      ? EVENTOS_CALENDARIO.filter(e => e.data === selectedDate)
+      : eventsInMonth,
+    [selectedDate, eventsInMonth]
+  );
 
   return (
     <>
