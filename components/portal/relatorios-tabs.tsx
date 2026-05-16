@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, FileDown, Share2 } from "lucide-react";
 import { cn, formatCurrency, formatCurrencyCompact, formatCompetencia } from "@/lib/utils";
 import { agruparPorPeriodo, resumoAnual, type Periodo, type PeriodoAgrupado } from "@/lib/analytics";
 import { EvolucaoChart } from "./evolucao-chart";
+import { DRE_MESES, CLIENTE, ESCRITORIO } from "@/lib/mock-data";
 import type { DREMes } from "@/lib/mock-data";
 
 type DREDetalhe = typeof import("@/lib/mock-data").DRE_DETALHE;
@@ -130,21 +131,54 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
   const dadosExibidos = periodo === "mensal" ? dadosAgrupados.slice(-12) : dadosAgrupados;
 
   const resumo2024 = resumoAnual(dreMeses, 2024);
-  const resumo2025 = resumoAnual(dreMeses, 2025);
+  const resumo2025 = resumoAnual(DRE_MESES, 2025);
   const crescimentoReceita = ((resumo2025.receita - resumo2024.receita) / resumo2024.receita) * 100;
   const crescimentoEbitda = ((resumo2025.ebitda - resumo2024.ebitda) / resumo2024.ebitda) * 100;
 
+  function handleExport() {
+    window.open("/print/relatorio", "_blank");
+  }
+
+  function handleShare() {
+    const r = resumoAnual(DRE_MESES, 2025);
+    const margem = ((r.ebitda / r.receita) * 100).toFixed(1).replace(".", ",");
+    const texto = encodeURIComponent(
+      `Relatório Financeiro 2025 — ${CLIENTE.razaoSocial}\n` +
+        `Receita: ${formatCurrency(r.receita)}  |  EBITDA: ${margem}%  |  Lucro: ${formatCurrency(r.lucroLiquido)}\n\n` +
+        `Gerado via Contabil 360 · ${ESCRITORIO.nome}`
+    );
+    window.open(`https://wa.me/?text=${texto}`, "_blank");
+  }
+
   return (
     <div>
-      {/* Abas */}
-      <div className="flex border-b border-border mb-4 md:mb-6 overflow-x-auto scrollbar-none">
-        {ABAS.map((a) => (
-          <button key={a.id} onClick={() => setAba(a.id)}
-            className={cn("px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap flex-shrink-0 transition-colors",
-              aba === a.id ? "border-primary text-primary" : "border-transparent text-text-muted hover:text-text")}>
-            {a.label}
+      {/* Abas + ações na mesma linha */}
+      <div className="flex items-center border-b border-border mb-4 md:mb-6">
+        <div className="overflow-x-auto scrollbar-none flex-1 flex">
+          {ABAS.map((a) => (
+            <button key={a.id} onClick={() => setAba(a.id)}
+              className={cn("px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap flex-shrink-0 transition-colors",
+                aba === a.id ? "border-primary text-primary" : "border-transparent text-text-muted hover:text-text")}>
+              {a.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex-shrink-0 flex items-center gap-1.5 pl-3 pb-px">
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-text-muted border border-border rounded-md hover:bg-surface hover:text-text transition-colors"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Compartilhar</span>
           </button>
-        ))}
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-white bg-primary rounded-md hover:bg-primary-hover transition-colors"
+          >
+            <FileDown className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Exportar PDF</span>
+          </button>
+        </div>
       </div>
 
       {/* ── DRE do mês ─────────────────────────────────────────────────────── */}

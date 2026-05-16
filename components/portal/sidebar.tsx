@@ -6,6 +6,7 @@ import {
   Building2,
   LayoutDashboard,
   BarChart2,
+  Calendar,
   FileText,
   MessageSquare,
   LogOut,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/inicio", label: "Início", icon: LayoutDashboard },
   { href: "/relatorios", label: "Relatórios", icon: BarChart2 },
+  { href: "/calendario", label: "Calendário", icon: Calendar },
   { href: "/documentos", label: "Documentos", icon: FileText },
   { href: "/tickets", label: "Atendimento", icon: MessageSquare },
 ];

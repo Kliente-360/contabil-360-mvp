@@ -1,4 +1,4 @@
-import { FileText, Download, FileCheck, FileSignature } from "lucide-react";
+import { FileText, Download, FileCheck, FileSignature, ScrollText, Receipt, BookOpen } from "lucide-react";
 import { DOCUMENTOS } from "@/lib/mock-data";
 import { formatDate, formatCompetencia } from "@/lib/utils";
 import { MobileHeader } from "@/components/portal/mobile-header";
@@ -7,7 +7,10 @@ const TIPO_CONFIG = {
   guia: { label: "Guia", icon: FileCheck, badge: "badge-success" },
   relatorio: { label: "Relatório", icon: FileText, badge: "badge-neutral" },
   declaracao: { label: "Declaração", icon: FileSignature, badge: "badge-warning" },
-  contrato: { label: "Contrato", icon: FileText, badge: "badge-neutral" },
+  contrato: { label: "Contrato", icon: ScrollText, badge: "badge-neutral" },
+  certidao: { label: "Certidão", icon: FileCheck, badge: "badge-neutral" },
+  boleto: { label: "Boleto", icon: Receipt, badge: "badge-warning" },
+  ato_constitutivo: { label: "Ato Constitutivo", icon: BookOpen, badge: "badge-neutral" },
 };
 
 function formatTamanho(kb: number): string {

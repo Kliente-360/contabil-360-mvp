@@ -89,22 +89,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Acesso rápido demo */}
-          <button
-            type="button"
-            onClick={() => {
-              setEmail(DEMO_CREDENTIAL.email);
-              setPassword(DEMO_CREDENTIAL.password);
-            }}
-            className="w-full flex items-center gap-2 px-4 py-2.5 mb-6 border border-dashed border-border rounded-md text-xs text-text-muted hover:border-primary hover:text-primary transition-colors"
-          >
-            <Zap className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>
-              <span className="font-medium">Acesso demo —</span>{" "}
-              Auto Center São Jorge Ltda
-            </span>
-          </button>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-text mb-1.5">
@@ -162,6 +146,18 @@ export default function LoginPage() {
               Fale com seu escritório
             </span>
           </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              setEmail(DEMO_CREDENTIAL.email);
+              setPassword(DEMO_CREDENTIAL.password);
+            }}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2 text-xs text-text-muted hover:text-primary transition-colors"
+          >
+            <Zap className="w-3 h-3 flex-shrink-0" />
+            Preencher dados de demonstração
+          </button>
         </div>
       </div>
     </div>

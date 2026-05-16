@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BarChart2, FileText, MessageSquare } from "lucide-react";
+import { LayoutDashboard, BarChart2, Calendar, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/inicio", label: "Início", icon: LayoutDashboard },
   { href: "/relatorios", label: "Relatórios", icon: BarChart2 },
+  { href: "/calendario", label: "Calendário", icon: Calendar },
   { href: "/documentos", label: "Documentos", icon: FileText },
-  { href: "/tickets", label: "Atendimento", icon: MessageSquare },
 ];
 
 export function BottomNav() {

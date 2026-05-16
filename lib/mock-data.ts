@@ -312,27 +312,372 @@ export const BALANCO = {
   },
 };
 
+// ─── CALENDÁRIO FISCAL ────────────────────────────────────────────────────────
+
+export type EventoCalendario = {
+  id: string;
+  titulo: string;
+  descricao: string;
+  data: string;      // "YYYY-MM-DD"
+  tipo: "das" | "folha" | "prolabore" | "contabilidade" | "obrigacao" | "reuniao";
+  valor?: number;    // when it's a payment
+  status: "pago" | "pendente" | "vencido" | "agendado";
+};
+
+export const EVENTOS_CALENDARIO: EventoCalendario[] = [
+  // ── Janeiro 2026 ────────────────────────────────────────────────────────────
+  {
+    id: "evt-001",
+    titulo: "DASN-SIMEI 2025 — Entrega",
+    descricao: "Declaração Anual do Simples Nacional referente ao exercício 2025.",
+    data: "2026-01-31",
+    tipo: "obrigacao",
+    status: "pendente",
+  },
+  {
+    id: "evt-002",
+    titulo: "Folha de Pagamento — Janeiro/2026",
+    descricao: "Pagamento da folha de pagamento e encargos trabalhistas.",
+    data: "2026-01-05",
+    tipo: "folha",
+    valor: 27_200,
+    status: "pago",
+  },
+  {
+    id: "evt-003",
+    titulo: "Pró-labore — Janeiro/2026",
+    descricao: "Retirada de pró-labore dos sócios.",
+    data: "2026-01-10",
+    tipo: "prolabore",
+    valor: 8_500,
+    status: "pago",
+  },
+  {
+    id: "evt-004",
+    titulo: "Boleto Contabilidade — Janeiro/2026",
+    descricao: "Mensalidade de serviços contábeis — Tributar Assessoria Contábil.",
+    data: "2026-01-15",
+    tipo: "contabilidade",
+    valor: 1_200,
+    status: "pago",
+  },
+  {
+    id: "evt-005",
+    titulo: "FGTS — Janeiro/2026",
+    descricao: "Recolhimento mensal do FGTS dos colaboradores.",
+    data: "2026-01-07",
+    tipo: "folha",
+    valor: 2_400,
+    status: "pago",
+  },
+  {
+    id: "evt-006",
+    titulo: "DAS Simples Nacional — Dez/2025",
+    descricao: "Guia de recolhimento do DAS referente à competência Dezembro/2025.",
+    data: "2026-01-20",
+    tipo: "das",
+    valor: 7_249,
+    status: "pago",
+  },
+
+  // ── Fevereiro 2026 ──────────────────────────────────────────────────────────
+  {
+    id: "evt-007",
+    titulo: "Folha de Pagamento — Fevereiro/2026",
+    descricao: "Pagamento da folha de pagamento e encargos trabalhistas.",
+    data: "2026-02-05",
+    tipo: "folha",
+    valor: 27_200,
+    status: "pago",
+  },
+  {
+    id: "evt-008",
+    titulo: "FGTS — Fevereiro/2026",
+    descricao: "Recolhimento mensal do FGTS dos colaboradores.",
+    data: "2026-02-07",
+    tipo: "folha",
+    valor: 2_400,
+    status: "pago",
+  },
+  {
+    id: "evt-009",
+    titulo: "Pró-labore — Fevereiro/2026",
+    descricao: "Retirada de pró-labore dos sócios.",
+    data: "2026-02-10",
+    tipo: "prolabore",
+    valor: 8_500,
+    status: "pago",
+  },
+  {
+    id: "evt-010",
+    titulo: "Boleto Contabilidade — Fevereiro/2026",
+    descricao: "Mensalidade de serviços contábeis — Tributar Assessoria Contábil.",
+    data: "2026-02-15",
+    tipo: "contabilidade",
+    valor: 1_200,
+    status: "pago",
+  },
+  {
+    id: "evt-011",
+    titulo: "DAS Simples Nacional — Jan/2026",
+    descricao: "Guia de recolhimento do DAS referente à competência Janeiro/2026.",
+    data: "2026-02-20",
+    tipo: "das",
+    valor: 6_180,
+    status: "pago",
+  },
+  {
+    id: "evt-012",
+    titulo: "DIRF 2025 — Entrega",
+    descricao: "Declaração do Imposto sobre a Renda Retido na Fonte — exercício 2025.",
+    data: "2026-02-28",
+    tipo: "obrigacao",
+    status: "pago",
+  },
+
+  // ── Março 2026 ───────────────────────────────────────────────────────────────
+  {
+    id: "evt-013",
+    titulo: "Folha de Pagamento — Março/2026",
+    descricao: "Pagamento da folha de pagamento e encargos trabalhistas.",
+    data: "2026-03-05",
+    tipo: "folha",
+    valor: 27_200,
+    status: "pago",
+  },
+  {
+    id: "evt-014",
+    titulo: "FGTS — Março/2026",
+    descricao: "Recolhimento mensal do FGTS dos colaboradores.",
+    data: "2026-03-07",
+    tipo: "folha",
+    valor: 2_400,
+    status: "pago",
+  },
+  {
+    id: "evt-015",
+    titulo: "Pró-labore — Março/2026",
+    descricao: "Retirada de pró-labore dos sócios.",
+    data: "2026-03-10",
+    tipo: "prolabore",
+    valor: 8_500,
+    status: "pago",
+  },
+  {
+    id: "evt-016",
+    titulo: "Boleto Contabilidade — Março/2026",
+    descricao: "Mensalidade de serviços contábeis — Tributar Assessoria Contábil.",
+    data: "2026-03-15",
+    tipo: "contabilidade",
+    valor: 1_200,
+    status: "pago",
+  },
+  {
+    id: "evt-017",
+    titulo: "DAS Simples Nacional — Fev/2026",
+    descricao: "Guia de recolhimento do DAS referente à competência Fevereiro/2026.",
+    data: "2026-03-20",
+    tipo: "das",
+    valor: 6_340,
+    status: "pago",
+  },
+  {
+    id: "evt-018",
+    titulo: "Reuniao Trimestral com Contador — Q1/2026",
+    descricao: "Revisao de resultados do 1o trimestre, planejamento tributario e metas.",
+    data: "2026-03-26",
+    tipo: "reuniao",
+    status: "agendado",
+  },
+
+  // ── Abril 2026 ───────────────────────────────────────────────────────────────
+  {
+    id: "evt-019",
+    titulo: "Folha de Pagamento — Abril/2026",
+    descricao: "Pagamento da folha de pagamento e encargos trabalhistas.",
+    data: "2026-04-05",
+    tipo: "folha",
+    valor: 27_200,
+    status: "pago",
+  },
+  {
+    id: "evt-020",
+    titulo: "FGTS — Abril/2026",
+    descricao: "Recolhimento mensal do FGTS dos colaboradores.",
+    data: "2026-04-07",
+    tipo: "folha",
+    valor: 2_400,
+    status: "pago",
+  },
+  {
+    id: "evt-021",
+    titulo: "Pró-labore — Abril/2026",
+    descricao: "Retirada de pró-labore dos sócios.",
+    data: "2026-04-10",
+    tipo: "prolabore",
+    valor: 8_500,
+    status: "pago",
+  },
+  {
+    id: "evt-022",
+    titulo: "Boleto Contabilidade — Abril/2026",
+    descricao: "Mensalidade de serviços contábeis — Tributar Assessoria Contábil.",
+    data: "2026-04-15",
+    tipo: "contabilidade",
+    valor: 1_200,
+    status: "pago",
+  },
+  {
+    id: "evt-023",
+    titulo: "DAS Simples Nacional — Mar/2026",
+    descricao: "Guia de recolhimento do DAS referente à competência Março/2026.",
+    data: "2026-04-20",
+    tipo: "das",
+    valor: 6_720,
+    status: "pago",
+  },
+  {
+    id: "evt-024",
+    titulo: "SPED Fiscal — Entrega EFD ICMS/IPI",
+    descricao: "Entrega do arquivo SPED Fiscal referente ao 1o trimestre de 2026.",
+    data: "2026-04-25",
+    tipo: "obrigacao",
+    status: "pago",
+  },
+
+  // ── Maio 2026 ────────────────────────────────────────────────────────────────
+  {
+    id: "evt-025",
+    titulo: "Folha de Pagamento — Maio/2026",
+    descricao: "Pagamento da folha de pagamento e encargos trabalhistas.",
+    data: "2026-05-05",
+    tipo: "folha",
+    valor: 27_200,
+    status: "pago",
+  },
+  {
+    id: "evt-026",
+    titulo: "FGTS — Maio/2026",
+    descricao: "Recolhimento mensal do FGTS dos colaboradores.",
+    data: "2026-05-07",
+    tipo: "folha",
+    valor: 2_400,
+    status: "pago",
+  },
+  {
+    id: "evt-027",
+    titulo: "Pró-labore — Maio/2026",
+    descricao: "Retirada de pró-labore dos sócios.",
+    data: "2026-05-10",
+    tipo: "prolabore",
+    valor: 8_500,
+    status: "pago",
+  },
+  {
+    id: "evt-028",
+    titulo: "Boleto Contabilidade — Maio/2026",
+    descricao: "Mensalidade de serviços contábeis — Tributar Assessoria Contábil.",
+    data: "2026-05-15",
+    tipo: "contabilidade",
+    valor: 1_200,
+    status: "pendente",
+  },
+  {
+    id: "evt-029",
+    titulo: "DAS Simples Nacional — Abr/2026",
+    descricao: "Guia de recolhimento do DAS referente à competência Abril/2026.",
+    data: "2026-05-20",
+    tipo: "das",
+    valor: 6_950,
+    status: "pendente",
+  },
+
+  // ── Junho 2026 ───────────────────────────────────────────────────────────────
+  {
+    id: "evt-030",
+    titulo: "Folha de Pagamento — Junho/2026",
+    descricao: "Pagamento da folha de pagamento e encargos trabalhistas.",
+    data: "2026-06-05",
+    tipo: "folha",
+    valor: 27_200,
+    status: "agendado",
+  },
+  {
+    id: "evt-031",
+    titulo: "FGTS — Junho/2026",
+    descricao: "Recolhimento mensal do FGTS dos colaboradores.",
+    data: "2026-06-07",
+    tipo: "folha",
+    valor: 2_400,
+    status: "agendado",
+  },
+  {
+    id: "evt-032",
+    titulo: "Pró-labore — Junho/2026",
+    descricao: "Retirada de pró-labore dos sócios.",
+    data: "2026-06-10",
+    tipo: "prolabore",
+    valor: 8_500,
+    status: "agendado",
+  },
+  {
+    id: "evt-033",
+    titulo: "Boleto Contabilidade — Junho/2026",
+    descricao: "Mensalidade de serviços contábeis — Tributar Assessoria Contábil.",
+    data: "2026-06-15",
+    tipo: "contabilidade",
+    valor: 1_200,
+    status: "agendado",
+  },
+  {
+    id: "evt-034",
+    titulo: "DAS Simples Nacional — Mai/2026",
+    descricao: "Guia de recolhimento do DAS referente à competência Maio/2026.",
+    data: "2026-06-20",
+    tipo: "das",
+    valor: 7_100,
+    status: "agendado",
+  },
+  {
+    id: "evt-035",
+    titulo: "Reuniao Trimestral com Contador — Q2/2026",
+    descricao: "Revisao de resultados do 2o trimestre, planejamento tributario e metas.",
+    data: "2026-06-25",
+    tipo: "reuniao",
+    status: "agendado",
+  },
+];
+
 // ─── DOCUMENTOS ───────────────────────────────────────────────────────────────
 
 export type Documento = {
   id: string;
   nome: string;
-  tipo: "guia" | "relatorio" | "declaracao" | "contrato";
+  tipo: "guia" | "relatorio" | "declaracao" | "contrato" | "certidao" | "boleto" | "ato_constitutivo";
   competencia: string;
   tamanhoKb: number;
   enviadoEm: string;
   enviadoPor: string;
+  valor?: number;
 };
 
 export const DOCUMENTOS: Documento[] = [
-  { id: "doc-001", nome: "PGDAS-D — Dezembro 2025", tipo: "guia", competencia: "2025-12", tamanhoKb: 184, enviadoEm: "2026-01-08", enviadoPor: "Ana Paula Ferreira" },
-  { id: "doc-002", nome: "Relatório DRE — Dezembro 2025", tipo: "relatorio", competencia: "2025-12", tamanhoKb: 318, enviadoEm: "2026-01-08", enviadoPor: "Ana Paula Ferreira" },
-  { id: "doc-003", nome: "PGDAS-D — Novembro 2025", tipo: "guia", competencia: "2025-11", tamanhoKb: 191, enviadoEm: "2025-12-08", enviadoPor: "Ana Paula Ferreira" },
-  { id: "doc-004", nome: "PGDAS-D — Outubro 2025", tipo: "guia", competencia: "2025-10", tamanhoKb: 177, enviadoEm: "2025-11-07", enviadoPor: "Ana Paula Ferreira" },
-  { id: "doc-005", nome: "PGDAS-D — Setembro 2025", tipo: "guia", competencia: "2025-09", tamanhoKb: 183, enviadoEm: "2025-10-09", enviadoPor: "Ana Paula Ferreira" },
-  { id: "doc-006", nome: "Relatório Anual — Exercício 2024", tipo: "relatorio", competencia: "2024-12", tamanhoKb: 892, enviadoEm: "2025-02-14", enviadoPor: "Dr. Roberto Mendes" },
-  { id: "doc-007", nome: "DASN-SIMEI — 2024", tipo: "declaracao", competencia: "2024-12", tamanhoKb: 234, enviadoEm: "2025-01-31", enviadoPor: "Ana Paula Ferreira" },
-  { id: "doc-008", nome: "Contrato de Prestação de Serviços Contábeis", tipo: "contrato", competencia: "2024-01", tamanhoKb: 542, enviadoEm: "2024-01-15", enviadoPor: "Dr. Roberto Mendes" },
+  { id: "doc-001", nome: "Contrato Social — Auto Center São Jorge Ltda", tipo: "ato_constitutivo", competencia: "2024-01", tamanhoKb: 1_248, enviadoEm: "2024-01-10", enviadoPor: "Dr. Roberto Mendes" },
+  { id: "doc-002", nome: "Cartão CNPJ", tipo: "certidao", competencia: "2024-01", tamanhoKb: 98, enviadoEm: "2024-01-10", enviadoPor: "Dr. Roberto Mendes" },
+  { id: "doc-003", nome: "Alvará de Funcionamento 2025", tipo: "certidao", competencia: "2025-01", tamanhoKb: 312, enviadoEm: "2025-02-03", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-004", nome: "Contrato de Prestação de Serviços Contábeis", tipo: "contrato", competencia: "2024-01", tamanhoKb: 542, enviadoEm: "2024-01-15", enviadoPor: "Dr. Roberto Mendes" },
+  { id: "doc-005", nome: "Boleto Contabilidade — Janeiro/2026", tipo: "boleto", competencia: "2026-01", tamanhoKb: 76, enviadoEm: "2026-01-08", enviadoPor: "Ana Paula Ferreira", valor: 1_200 },
+  { id: "doc-006", nome: "Boleto Contabilidade — Dezembro/2025", tipo: "boleto", competencia: "2025-12", tamanhoKb: 76, enviadoEm: "2025-12-08", enviadoPor: "Ana Paula Ferreira", valor: 1_200 },
+  { id: "doc-007", nome: "PGDAS-D — Dezembro 2025", tipo: "guia", competencia: "2025-12", tamanhoKb: 184, enviadoEm: "2026-01-08", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-008", nome: "PGDAS-D — Novembro 2025", tipo: "guia", competencia: "2025-11", tamanhoKb: 191, enviadoEm: "2025-12-08", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-009", nome: "PGDAS-D — Outubro 2025", tipo: "guia", competencia: "2025-10", tamanhoKb: 177, enviadoEm: "2025-11-07", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-010", nome: "PGDAS-D — Setembro 2025", tipo: "guia", competencia: "2025-09", tamanhoKb: 183, enviadoEm: "2025-10-09", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-011", nome: "Relatório DRE — Dezembro 2025", tipo: "relatorio", competencia: "2025-12", tamanhoKb: 318, enviadoEm: "2026-01-08", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-012", nome: "Fechamento Contábil — Q4/2025", tipo: "relatorio", competencia: "2025-12", tamanhoKb: 524, enviadoEm: "2026-01-15", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-013", nome: "Fechamento Contábil — Q3/2025", tipo: "relatorio", competencia: "2025-09", tamanhoKb: 498, enviadoEm: "2025-10-14", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-014", nome: "Relatório Anual — Exercício 2024", tipo: "relatorio", competencia: "2024-12", tamanhoKb: 892, enviadoEm: "2025-02-14", enviadoPor: "Dr. Roberto Mendes" },
+  { id: "doc-015", nome: "DASN-SIMEI — Exercício 2024", tipo: "declaracao", competencia: "2024-12", tamanhoKb: 234, enviadoEm: "2025-01-31", enviadoPor: "Ana Paula Ferreira" },
+  { id: "doc-016", nome: "DIRF 2025", tipo: "declaracao", competencia: "2025-12", tamanhoKb: 187, enviadoEm: "2026-02-28", enviadoPor: "Ana Paula Ferreira" },
 ];
 
 // ─── TICKETS ──────────────────────────────────────────────────────────────────
