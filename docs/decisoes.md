@@ -75,7 +75,7 @@ Karbon, TaxDome e Canopy resolvem exatamente esse problema para o mercado americ
 
 | Opção descartada | Alternativa escolhida | Motivo |
 |---|---|---|
-| Netlify | Vercel | Netlify tem suporte parcial ao App Router do Next.js 14. Vercel é feito pela mesma equipe. |
+| Vercel (produção) | Netlify (MVP temporário) | Netlify está em uso no Sprint 1A por simplicidade de onboarding. Vercel é o destino — suporte nativo ao App Router, edge functions, otimização de fontes e builds paralelos. Migração sem mudança de código. |
 | Express | Next.js API Routes (depois Fastify) | Sem diferencial sobre Fastify. Fastify é 2x mais rápido e tem validação nativa. |
 | Prisma | Drizzle ORM | Prisma adiciona abstração desnecessária. Drizzle é mais próximo ao SQL e mais performático. |
 | NextAuth.js | Better Auth | Better Auth resolve multi-tenant nativamente. Migrar NextAuth para multi-tenant depois é trabalho considerável. |
@@ -91,7 +91,8 @@ Karbon, TaxDome e Canopy resolvem exatamente esse problema para o mercado americ
 
 | Serviço | Uso | Free tier | Quando pagar |
 |---|---|---|---|
-| **Vercel** | Deploy Next.js | 100GB bandwidth, deploys ilimitados | Com tráfego significativo |
+| **Netlify** | Deploy Next.js (MVP) | 100GB bandwidth, 300 min build/mês | Na migração para Vercel |
+| **Vercel** | Deploy Next.js (produção) | 100GB bandwidth, deploys ilimitados | Com tráfego significativo |
 | **Neon** | PostgreSQL 16 | 0,5GB storage, auto-suspend | Com >500MB de dados |
 | **Cloudflare R2** | Documentos e PDFs | 10GB storage, 1M ops/mês | Com >10GB de documentos |
 | **Upstash** | Redis (cache, sessões) | 10.000 req/dia | Com tráfego real |
@@ -151,19 +152,23 @@ Next.js API Routes            BullMQ workers
 
 ## 6. Plano de Sprints
 
-### Sprint 1A — Demo (1,5–2 semanas)
+### Sprint 1A — Demo — CONCLUÍDA
 
 **Objetivo:** Demonstrar para escritórios. Medir reação de mercado.
 
-**Inclui:**
-- Portal do cliente completo com seed data realista
-- Login do cliente
-- Início: KPIs do mês com gráfico de evolução
-- Relatórios: DRE + Balanço (tabs)
-- Documentos: lista + download
-- Tickets: visualização
-- Design system aplicado integralmente
-- Seed data: Tributar Assessoria Contábil + Auto Center São Jorge Ltda (Simples Nacional, 6 meses de dados)
+**Entregue:**
+- Portal do cliente completo com seed data realista (14 meses de dados)
+- Auth: login com JWT e middleware de verificação com cache (60s TTL)
+- `/inicio`: KPIs do mês, gráfico de evolução 12 meses, obrigações em aberto
+- `/relatorios`: DRE detalhado + Balanço Patrimonial + Análise comparativa com toggle acumulado
+- `/documentos`: lista com busca debounced, competência + data de upload
+- `/tickets`: threads de atendimento com histórico de conversas
+- `/calendario`: calendário fiscal interativo com mini-calendário e cards de status
+- `/print/relatorio`: exportação PDF A4 landscape executiva
+- PWA completo: splash screen para 8 iPhones, standalone, ícone diamond, status bar black-translucent
+- Logo mark unificado (diamond SVG) em toda a interface
+- Performance: next/font, Recharts lazy, useMemo generalizado, compress + optimizeFonts
+- Deploy: Netlify
 
 **Critério de go para 1B:** 3+ escritórios dizem "quero testar com cliente real".
 
@@ -214,15 +219,15 @@ Next.js API Routes            BullMQ workers
 | Funcionalidade | Status | Motivo |
 |---|---|---|
 | Razão contábil | Sprint 2 | DRE + BP já provam o conceito. Razão é detalhe operacional. |
-| Calendário fiscal | Sprint 2 | Não é diferencial, é commodity. Não converte escritório. |
+| Calendário fiscal | ~~Sprint 2~~ **Antecipado para Sprint 1A** | Decidido incluir na demo após avaliar que o contador usa para mostrar ao cliente o que vem pela frente. Diferencializa a experiência. |
 | Comunidade | Sprint 3 | Valor de retenção, não de aquisição. Não valida o core. |
 | Score do cliente | Sprint 3 | Nice-to-have. Não bloqueia validação de mercado. |
 | IA de classificação | Sprint 2 | Alto esforço, valida hipótese diferente do portal. |
 | Upload XML NF-e | Sprint 2 | Integração complexa. Não essencial para demo funcionar. |
 | Notificações email | Sprint 1B+ | Útil mas não bloqueia validação. |
 | Onboarding wizard | Sprint 3 | Polimento pós-tração. |
-| Exportação PDF | Sprint 3 | Pode ser manual por enquanto. |
-| App mobile | Sprint 3 | Desktop-first para o MVP. |
+| Exportação PDF | ~~Sprint 3~~ **Antecipado para Sprint 1A** | Incluído via `/print/relatorio` (A4 landscape, auto-print). Diferencial de demo muito alto — o contador vê o relatório que o cliente vai receber. |
+| App mobile nativo | Sprint 3 | PWA resolve o caso de uso mobile no Sprint 1A. App React Native entra em Sprint 3 se validado o PMF. |
 | White-label | Sprint 3 | Recurso de escala, não de validação. |
 | Multi-filial | Enterprise | Complexidade desnecessária no MVP. |
 

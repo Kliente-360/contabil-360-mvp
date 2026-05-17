@@ -163,25 +163,38 @@ const designTokens = {
 
 ---
 
-## Estado Atual: Sprint 1A (Demo)
+## Estado Atual: Sprint 1A (Demo) — CONCLUÍDA
 
 ### Objetivo
 Portal do cliente com seed data realista. Demonstrar para escritórios de contabilidade e medir interesse de mercado.
 
-### Inclui
+### Deploy
+Netlify (temporário no MVP). Vercel está previsto para produção — tem suporte nativo ao Next.js 14 App Router, edge functions e otimização de fontes. A migração é trivial (sem mudança de código).
+
+### O que foi entregue
 - Setup Next.js 14 + Tailwind + shadcn/ui com design system completo
+- `next/font` para Inter (elimina Google Fonts render-blocking), `compress: true`, `optimizeFonts: true`
 - Schema Drizzle (subset): `escritorios`, `usuarios`, `clientes`, `lancamentos`, `plano_contas`, `documentos`, `tickets`, `ticket_mensagens`, `eventos_calendario`
-- Seed data: Tributar Assessoria Contábil + Auto Center São Jorge Ltda (6 meses de DRE, Simples Nacional)
-- Auth: login do cliente (email + senha)
-- Portal: `/inicio`, `/relatorios` (DRE + Balanço), `/documentos`, `/tickets`
+- Seed data: Tributar Assessoria Contábil + Auto Center São Jorge Ltda (14 meses de DRE, Simples Nacional)
+- Auth: login do cliente (email + senha) com middleware de verificação JWT (cache 60s)
+- `/inicio` — KPIs do mês (receita, EBITDA, lucro líquido, impostos), gráfico de evolução 12 meses, obrigações em aberto
+- `/relatorios` — DRE detalhado, Balanço Patrimonial, Análise com toggle acumulado (mensal/trimestral/anual), exportação PDF
+- `/documentos` — lista com busca debounced, competência + data de upload, download
+- `/tickets` — threads de atendimento com histórico de conversas
+- `/calendario` — calendário fiscal interativo, mini-calendário com pontos por dia, cards 2×2 de status
+- `/print/relatorio` — layout A4 landscape para exportação executiva
+- PWA: `apple-icon.tsx`, `icon.tsx`, `manifest.ts` (standalone), splash screen dinâmica para 8 tamanhos de iPhone, status bar black-translucent
+- Logo diamond (4 círculos brancos em losango) unificado em sidebar, mobile header, login e PWA
+- `components/shared/logo-mark.tsx` — SVG reutilizável com viewBox fixo
+- `lib/analytics.ts` — `agruparPorPeriodo`, `resumoAnual`, `PeriodoAgrupado`
+- Performance: Recharts lazy via `next/dynamic`, `useMemo` em todos os componentes pesados, constantes de módulo
 
 ### Critério de sucesso da Sprint 1A
 3 ou mais escritórios dizem "quero testar com um cliente real".
 
 ### Não inclui (Sprint 1B ou posterior)
 - Admin do escritório
-- Upload real de arquivos
-- Calendário fiscal
+- Upload real de arquivos (Cloudflare R2)
 - Razão contábil
 - IA de classificação
 - Email e notificações
