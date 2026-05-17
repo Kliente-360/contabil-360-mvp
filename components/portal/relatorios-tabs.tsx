@@ -177,7 +177,14 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
   }, [dreMeses]);
 
   function handleExport() {
-    window.open("/print/relatorio", "_blank");
+    const iframe = document.createElement("iframe");
+    iframe.src = "/print/relatorio";
+    iframe.style.cssText = "position:fixed;width:0;height:0;opacity:0;border:none;";
+    document.body.appendChild(iframe);
+    iframe.onload = () => {
+      iframe.contentWindow?.print();
+      setTimeout(() => document.body.removeChild(iframe), 2000);
+    };
   }
 
   function handleShare() {

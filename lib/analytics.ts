@@ -1,4 +1,5 @@
 import type { DREMes } from "./mock-data";
+import { formatCurrencyCompact } from "./utils";
 
 export type Periodo = "mensal" | "trimestral" | "anual";
 
@@ -114,5 +115,137 @@ export function resumoAnual(meses: DREMes[], ano: number) {
     mesesNegativos: 12 - mesesPositivos,
     melhorMes,
     piorMes,
+  };
+}
+
+export type InsightTipo = "alerta" | "atencao" | "elogio" | "neutro";
+export type InsightIcone = "TrendingUp" | "TrendingDown" | "AlertTriangle" | "Info";
+
+export type Insight = {
+  tipo: InsightTipo;
+  titulo: string;
+  descricao: string;
+  icone: InsightIcone;
+};
+
+export function gerarInsight(meses: DREMes[]): Insight {
+  if (meses.length === 0) {
+    return { tipo: "neutro", titulo: "Sem dados disponíveis", descricao: "Nenhum período com lançamentos.", icone: "Info" };
+  }
+
+  const atual = meses[meses.length - 1];
+  const anterior = meses.length >= 2 ? meses[meses.length - 2] : null;
+
+  // Resultado líquido negativo
+  if (atual.lucroLiquido < 0) {
+    return {
+      tipo: "alerta",
+      titulo: atual.ebitda < 0 ? "Resultado operacional e líquido negativos" : "Resultado líquido negativo",
+      descricao: `O mês fechou com prejuízo de ${formatCurrencyCompact(Math.abs(atual.lucroLiquido))}. ${atual.observacao ?? "Verifique as despesas extraordinárias com seu contador."}`,
+      icone: "TrendingDown",
+    };
+  }
+
+  // EBITDA negativo
+  if (atual.ebitda < 0) {
+    return {
+      tipo: "alerta",
+      titulo: "Resultado operacional negativo",
+      descricao: `As despesas operacionais superaram o lucro bruto em ${formatCurrencyCompact(Math.abs(atual.ebitda))}. Revise a composição de custos com seu contador.`,
+      icone: "AlertTriangle",
+    };
+  }
+
+  // Receita caiu mais de 20% vs mês anterior
+  if (anterior && anterior.receita > 0) {
+    const varReceita = ((atual.receita - anterior.receita) / anterior.receita) * 100;
+    if (varReceita < -20) {
+      return {
+        tipo: "atencao",
+        titulo: `Receita recuou ${Math.abs(varReceita).toFixed(0)}% em relação a ${anterior.mesLabel}`,
+        descricao: `A queda de ${formatCurrencyCompact(anterior.receita - atual.receita)} pode refletir sazonalidade. Acompanhe a evolução nas próximas semanas.`,
+        icone: "AlertTriangle",
+      };
+    }
+  }
+
+  // Melhor lucro líquido do período
+  const maxLucro = Math.max(...meses.map((m) => m.lucroLiquido));
+  if (atual.lucroLiquido >= maxLucro) {
+    const margem = ((atual.lucroLiquido / atual.receita) * 100).toFixed(1);
+    return {
+      tipo: "elogio",
+      titulo: `Melhor resultado dos últimos ${meses.length} meses`,
+      descricao: `Lucro líquido de ${formatCurrencyCompact(atual.lucroLiquido)} com margem de ${margem}% — o maior do período analisado.`,
+      icone: "TrendingUp",
+    };
+  }
+
+  // Melhor EBITDA do período
+  const maxEbitda = Math.max(...meses.map((m) => m.ebitda));
+  if (atual.ebitda >= maxEbitda) {
+    const margem = ((atual.ebitda / atual.receita) * 100).toFixed(1);
+    return {
+      tipo: "elogio",
+      titulo: `Melhor EBITDA dos últimos ${meses.length} meses`,
+      descricao: `EBITDA de ${formatCurrencyCompact(atual.ebitda)} com margem de ${margem}% — eficiência operacional em alta.`,
+      icone: "TrendingUp",
+    };
+  }
+
+  // Recuperação após mês negativo
+  if (anterior && anterior.lucroLiquido < 0 && atual.lucroLiquido > 0) {
+    return {
+      tipo: "elogio",
+      titulo: `Recuperação após resultado negativo em ${anterior.mesLabel}`,
+      descricao: `A empresa voltou ao azul com lucro líquido de ${formatCurrencyCompact(atual.lucroLiquido)}.`,
+      icone: "TrendingUp",
+    };
+  }
+
+  // Três meses consecutivos de queda no lucro
+  if (meses.length >= 4) {
+    const [m3, m2, m1] = meses.slice(-3);
+    const ref = meses[meses.length - 4];
+    if (m3.lucroLiquido < ref.lucroLiquido && m2.lucroLiquido < m3.lucroLiquido && m1.lucroLiquido < m2.lucroLiquido) {
+      return {
+        tipo: "atencao",
+        titulo: "Lucro em queda por 3 meses consecutivos",
+        descricao: `A tendência de redução pode indicar pressão em custos ou receita estagnada. Vale revisar a composição de despesas com seu contador.`,
+        icone: "AlertTriangle",
+      };
+    }
+  }
+
+  // Margem EBITDA acima de 30%
+  const margemEbitda = (atual.ebitda / atual.receita) * 100;
+  if (margemEbitda > 30) {
+    return {
+      tipo: "elogio",
+      titulo: `Margem EBITDA de ${margemEbitda.toFixed(1)}% — excelente eficiência`,
+      descricao: `Empresas saudáveis no segmento tipicamente operam entre 15% e 25%. Manter custos sob controle é o caminho para crescer com consistência.`,
+      icone: "TrendingUp",
+    };
+  }
+
+  // Acima da média do período
+  const mediaLucro = meses.reduce((s, m) => s + m.lucroLiquido, 0) / meses.length;
+  if (atual.lucroLiquido > mediaLucro * 1.1) {
+    const pct = ((atual.lucroLiquido / mediaLucro - 1) * 100).toFixed(0);
+    return {
+      tipo: "elogio",
+      titulo: "Resultado acima da média do período",
+      descricao: `O lucro líquido de ${formatCurrencyCompact(atual.lucroLiquido)} está ${pct}% acima da média mensal de ${formatCurrencyCompact(mediaLucro)} dos últimos ${meses.length} meses.`,
+      icone: "TrendingUp",
+    };
+  }
+
+  // Neutro
+  const margem = ((atual.lucroLiquido / atual.receita) * 100).toFixed(1);
+  return {
+    tipo: "neutro",
+    titulo: "Resultado dentro do padrão histórico",
+    descricao: `Lucro líquido de ${formatCurrencyCompact(atual.lucroLiquido)} com margem de ${margem}%. Sem variações significativas em relação ao histórico recente.`,
+    icone: "Info",
   };
 }
