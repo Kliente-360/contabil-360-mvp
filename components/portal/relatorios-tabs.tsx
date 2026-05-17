@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, FileDown, Share2 } from "lucide-react";
 import { cn, formatCurrency, formatCurrencyCompact, formatCompetencia } from "@/lib/utils";
-import { agruparPorPeriodo, resumoAnual, type Periodo, type PeriodoAgrupado } from "@/lib/analytics";
+import { agruparPorPeriodo, resumoAnual, gerarInsight, type Periodo, type PeriodoAgrupado } from "@/lib/analytics";
 const EvolucaoChart = dynamic(() => import("./evolucao-chart").then(m => ({ default: m.EvolucaoChart })), {
   ssr: false,
   loading: () => <div className="h-64 bg-surface animate-pulse rounded-lg" />,
@@ -183,14 +183,33 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
   }
 
   function handleShare() {
-    const r = resumo2025;
-    const margem = ((r.ebitda / r.receita) * 100).toFixed(1).replace(".", ",");
-    const texto = encodeURIComponent(
-      `Relatório Financeiro 2025 — ${CLIENTE.razaoSocial}\n` +
-        `Receita: ${formatCurrency(r.receita)}  |  EBITDA: ${margem}%  |  Lucro: ${formatCurrency(r.lucroLiquido)}\n\n` +
-        `Gerado via Contabil 360 · ${ESCRITORIO.nome}`
-    );
-    window.open(`https://wa.me/?text=${texto}`, "_blank");
+    const atual = dreMeses[dreMeses.length - 1];
+    const anterior = dreMeses[dreMeses.length - 2];
+    const insight = gerarInsight(dreMeses.slice(-12));
+
+    const fmtK = (v: number) => formatCurrencyCompact(v);
+    const fmtVar = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(1).replace(".", ",")}%`;
+    const varReceita = ((atual.receita - anterior.receita) / anterior.receita) * 100;
+    const margemEbitda = ((atual.ebitda / atual.receita) * 100).toFixed(1).replace(".", ",");
+    const margemLucro = ((atual.lucroLiquido / atual.receita) * 100).toFixed(1).replace(".", ",");
+
+    const linhas = [
+      `*${CLIENTE.razaoSocial}*`,
+      `Fechamento ${atual.mesLabel}`,
+      ``,
+      `*Receita:* ${fmtK(atual.receita)}  (${fmtVar(varReceita)} vs ${anterior.mesLabel})`,
+      `*EBITDA:* ${fmtK(atual.ebitda)}  |  Margem ${margemEbitda}%`,
+      `*Lucro Líquido:* ${fmtK(atual.lucroLiquido)}  |  Margem ${margemLucro}%`,
+      ``,
+      `_${insight.titulo}._`,
+      ``,
+      `Acumulado ${resumo2025.melhorMes.ano}`,
+      `Receita ${fmtK(resumo2025.receita)}  ·  Lucro ${fmtK(resumo2025.lucroLiquido)}  (${fmtVar(crescimentoReceita)} vs ${resumo2024.melhorMes.ano})`,
+      ``,
+      `_${ESCRITORIO.nome} · Contabil 360_`,
+    ];
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(linhas.join("\n"))}`, "_blank");
   }
 
   return (

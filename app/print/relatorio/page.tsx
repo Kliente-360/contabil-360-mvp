@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import { DRE_MESES, BALANCO, CLIENTE, ESCRITORIO } from "@/lib/mock-data";
-import { resumoAnual } from "@/lib/analytics";
-import { formatCurrency } from "@/lib/utils";
+import { resumoAnual, gerarInsight } from "@/lib/analytics";
+import { formatCurrency, formatCurrencyCompact } from "@/lib/utils";
 
 function pct(val: number, total: number) {
   if (total === 0) return "0,0%";
@@ -32,23 +31,13 @@ function Variacao({ atual, anterior }: { atual: number; anterior: number }) {
 export default function PrintRelatorio() {
   const r2024 = resumoAnual(DRE_MESES, 2024);
   const r2025 = resumoAnual(DRE_MESES, 2025);
+  const insight = gerarInsight(DRE_MESES.slice(-12));
   const hoje = new Date();
   const dataGeracao = hoje.toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
-
-  useEffect(() => {
-    const timer = setTimeout(() => window.print(), 800);
-    // afterprint não é suportado no iOS Safari — botão "Voltar" cobre esse caso
-    const afterPrint = () => window.history.back();
-    window.addEventListener("afterprint", afterPrint);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("afterprint", afterPrint);
-    };
-  }, []);
 
   const linhasDRE = [
     { label: "Receita Bruta", v24: r2024.receita, v25: r2025.receita, bold: false },
@@ -62,475 +51,429 @@ export default function PrintRelatorio() {
 
   return (
     <>
-    <button className="btn-voltar" onClick={() => window.history.back()}>
-      ← Voltar
-    </button>
-    <div className="print-page">
-      {/* ── HEADER ── */}
-      <div className="print-header">
-        <div>
-          <div className="empresa-nome">{CLIENTE.razaoSocial}</div>
-          <div className="empresa-sub">
-            CNPJ {CLIENTE.cnpj} · {CLIENTE.regimeTributario} · Exercício 2025
+      {/* ── AÇÕES (visíveis apenas na tela, ocultas no print) ── */}
+      <div className="screen-actions">
+        <button className="btn-back" onClick={() => window.history.back()}>
+          ← Voltar
+        </button>
+        <button className="btn-print" onClick={() => window.print()}>
+          Imprimir / Salvar PDF
+        </button>
+      </div>
+
+      {/* ── RESUMO MOBILE (visível apenas em tela pequena) ── */}
+      <div className="mobile-summary">
+        <div className="mobile-logo">Contabil 360</div>
+        <div className="mobile-empresa">{CLIENTE.razaoSocial}</div>
+        <div className="mobile-periodo">Relatório Financeiro · Exercício 2025</div>
+        <div className="mobile-metrics">
+          <div className="mobile-metric">
+            <span className="mobile-metric-label">Receita</span>
+            <span className="mobile-metric-value">{formatCurrencyCompact(r2025.receita)}</span>
+            <span className="mobile-metric-var" style={{ color: "#16A34A" }}>
+              +{((r2025.receita - r2024.receita) / r2024.receita * 100).toFixed(1).replace(".", ",")}% vs 2024
+            </span>
+          </div>
+          <div className="mobile-metric">
+            <span className="mobile-metric-label">EBITDA</span>
+            <span className="mobile-metric-value">{formatCurrencyCompact(r2025.ebitda)}</span>
+            <span className="mobile-metric-var" style={{ color: "#6B7280" }}>
+              Margem {pct(r2025.ebitda, r2025.receita)}
+            </span>
+          </div>
+          <div className="mobile-metric">
+            <span className="mobile-metric-label">Lucro Líquido</span>
+            <span className="mobile-metric-value">{formatCurrencyCompact(r2025.lucroLiquido)}</span>
+            <span className="mobile-metric-var" style={{ color: "#6B7280" }}>
+              Margem {pct(r2025.lucroLiquido, r2025.receita)}
+            </span>
           </div>
         </div>
-        <div className="header-right">
-          <div className="brand">Contabil 360</div>
-          <div className="brand-sub">Relatório Financeiro Executivo · Gerado em {dataGeracao}</div>
+        <div className="mobile-insight">
+          {insight.titulo}
         </div>
       </div>
 
-      {/* ── KPIs ── */}
-      <div className="kpi-grid">
-        {[
-          {
-            label: "Receita 2025",
-            valor: fmt(r2025.receita),
-            ant: r2024.receita,
-            atual: r2025.receita,
-            sub: "vs. 2024",
-          },
-          {
-            label: "EBITDA 2025",
-            valor: fmt(r2025.ebitda),
-            ant: r2024.ebitda,
-            atual: r2025.ebitda,
-            sub: `Margem ${pct(r2025.ebitda, r2025.receita)}`,
-          },
-          {
-            label: "Lucro Líquido",
-            valor: fmt(r2025.lucroLiquido),
-            ant: r2024.lucroLiquido,
-            atual: r2025.lucroLiquido,
-            sub: `Margem ${pct(r2025.lucroLiquido, r2025.receita)}`,
-          },
-          {
-            label: "Patrimônio Líquido",
-            valor: fmt(BALANCO.passivo.grupos[2].total),
-            ant: 0,
-            atual: 0,
-            sub: "Dez/2025",
-          },
-        ].map((kpi) => (
-          <div key={kpi.label} className="kpi-box">
-            <div className="kpi-label">{kpi.label}</div>
-            <div className="kpi-value">{kpi.valor}</div>
-            <div className="kpi-sub">
-              {kpi.sub}
-              {kpi.ant !== 0 && (
-                <Variacao atual={kpi.atual} anterior={kpi.ant} />
-              )}
+      {/* ── DOCUMENTO A4 (preview desktop + output do print) ── */}
+      <div className="print-page">
+        {/* HEADER */}
+        <div className="print-header">
+          <div>
+            <div className="empresa-nome">{CLIENTE.razaoSocial}</div>
+            <div className="empresa-sub">
+              CNPJ {CLIENTE.cnpj} · {CLIENTE.regimeTributario} · Exercício 2025
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* ── MAIN BODY: 2 columns ── */}
-      <div className="main-grid">
-        {/* Left: DRE Comparativa */}
-        <div className="col-left">
-          <div className="section-title">
-            DRE Comparativo — 2024 × 2025
+          <div className="header-right">
+            <div className="brand">Contabil 360</div>
+            <div className="brand-sub">Relatório Financeiro Executivo · Gerado em {dataGeracao}</div>
           </div>
-          <table className="report-table">
-            <thead>
-              <tr>
-                <th className="col-label">Indicador</th>
-                <th className="col-num">2024</th>
-                <th className="col-num">% Rec</th>
-                <th className="col-num">2025</th>
-                <th className="col-num">% Rec</th>
-                <th className="col-num">Var %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {linhasDRE.map((linha) => {
-                const varPct =
-                  linha.v24 !== 0
-                    ? ((linha.v25 - linha.v24) / Math.abs(linha.v24)) * 100
-                    : null;
-                const isNeg = linha.v25 < 0;
-                return (
-                  <tr key={linha.label} className={linha.bold ? "row-bold" : ""}>
-                    <td className="col-label">{linha.label}</td>
-                    <td className="col-num">{fmt(linha.v24)}</td>
-                    <td className="col-num muted">
-                      {pct(linha.v24, r2024.receita)}
-                    </td>
-                    <td
-                      className="col-num"
-                      style={isNeg ? { color: "#DC2626" } : undefined}
-                    >
-                      {fmt(linha.v25)}
-                    </td>
-                    <td className="col-num muted">
-                      {pct(linha.v25, r2025.receita)}
-                    </td>
-                    <td
-                      className="col-num"
-                      style={
-                        varPct !== null
-                          ? { color: varPct >= 0 ? "#166534" : "#DC2626" }
-                          : undefined
-                      }
-                    >
-                      {varPct !== null
-                        ? `${varPct >= 0 ? "+" : ""}${varPct.toFixed(1).replace(".", ",")}%`
-                        : "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
         </div>
 
-        {/* Right: Balanço Patrimonial */}
-        <div className="col-right">
-          <div className="section-title">Balanço Patrimonial — Dez/2025</div>
-          <div className="balanco-grid">
-            {/* ATIVO */}
-            <div>
-              <div className="balanco-group-title">ATIVO</div>
-              {BALANCO.ativo.grupos.map((grupo) => (
-                <div key={grupo.nome} className="balanco-group">
-                  <div className="balanco-group-header">
-                    <span>{grupo.nome}</span>
-                    <span>{fmt(grupo.total)}</span>
-                  </div>
-                  {grupo.contas.map((c) => (
-                    <div key={c.codigo} className="balanco-row">
-                      <span className="balanco-row-name">{c.nome}</span>
-                      <span>{fmt(c.valor)}</span>
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <div className="balanco-total">
-                <span>Total do Ativo</span>
-                <span>{fmt(BALANCO.ativo.total)}</span>
+        {/* KPIs */}
+        <div className="kpi-grid">
+          {[
+            { label: "Receita 2025", valor: fmt(r2025.receita), ant: r2024.receita, atual: r2025.receita, sub: "vs. 2024" },
+            { label: "EBITDA 2025", valor: fmt(r2025.ebitda), ant: r2024.ebitda, atual: r2025.ebitda, sub: `Margem ${pct(r2025.ebitda, r2025.receita)}` },
+            { label: "Lucro Líquido", valor: fmt(r2025.lucroLiquido), ant: r2024.lucroLiquido, atual: r2025.lucroLiquido, sub: `Margem ${pct(r2025.lucroLiquido, r2025.receita)}` },
+            { label: "Patrimônio Líquido", valor: fmt(BALANCO.passivo.grupos[2].total), ant: 0, atual: 0, sub: "Dez/2025" },
+          ].map((kpi) => (
+            <div key={kpi.label} className="kpi-box">
+              <div className="kpi-label">{kpi.label}</div>
+              <div className="kpi-value">{kpi.valor}</div>
+              <div className="kpi-sub">
+                {kpi.sub}
+                {kpi.ant !== 0 && <Variacao atual={kpi.atual} anterior={kpi.ant} />}
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* PASSIVO + PL */}
-            <div>
-              <div className="balanco-group-title">PASSIVO + PATRIMÔNIO LÍQUIDO</div>
-              {BALANCO.passivo.grupos.map((grupo) => (
-                <div key={grupo.nome} className="balanco-group">
-                  <div
-                    className="balanco-group-header"
-                    style={
-                      grupo.nome === "Patrimônio Líquido"
-                        ? { color: "#166534" }
-                        : undefined
-                    }
-                  >
-                    <span>{grupo.nome}</span>
-                    <span>{fmt(grupo.total)}</span>
-                  </div>
-                  {grupo.contas.map((c) => (
-                    <div key={c.codigo} className="balanco-row">
-                      <span className="balanco-row-name">{c.nome}</span>
-                      <span>{fmt(c.valor)}</span>
+        {/* MAIN 2-COLUMN */}
+        <div className="main-grid">
+          {/* DRE Comparativa */}
+          <div className="col-left">
+            <div className="section-title">DRE Comparativo — 2024 × 2025</div>
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th className="col-label">Indicador</th>
+                  <th className="col-num">2024</th>
+                  <th className="col-num">% Rec</th>
+                  <th className="col-num">2025</th>
+                  <th className="col-num">% Rec</th>
+                  <th className="col-num">Var %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linhasDRE.map((linha) => {
+                  const varPct = linha.v24 !== 0 ? ((linha.v25 - linha.v24) / Math.abs(linha.v24)) * 100 : null;
+                  const isNeg = linha.v25 < 0;
+                  return (
+                    <tr key={linha.label} className={linha.bold ? "row-bold" : ""}>
+                      <td className="col-label">{linha.label}</td>
+                      <td className="col-num">{fmt(linha.v24)}</td>
+                      <td className="col-num muted">{pct(linha.v24, r2024.receita)}</td>
+                      <td className="col-num" style={isNeg ? { color: "#DC2626" } : undefined}>{fmt(linha.v25)}</td>
+                      <td className="col-num muted">{pct(linha.v25, r2025.receita)}</td>
+                      <td className="col-num" style={varPct !== null ? { color: varPct >= 0 ? "#166534" : "#DC2626" } : undefined}>
+                        {varPct !== null ? `${varPct >= 0 ? "+" : ""}${varPct.toFixed(1).replace(".", ",")}%` : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Balanço */}
+          <div className="col-right">
+            <div className="section-title">Balanço Patrimonial — Dez/2025</div>
+            <div className="balanco-grid">
+              <div>
+                <div className="balanco-group-title">ATIVO</div>
+                {BALANCO.ativo.grupos.map((grupo) => (
+                  <div key={grupo.nome} className="balanco-group">
+                    <div className="balanco-group-header">
+                      <span>{grupo.nome}</span>
+                      <span>{fmt(grupo.total)}</span>
                     </div>
-                  ))}
+                    {grupo.contas.map((c) => (
+                      <div key={c.codigo} className="balanco-row">
+                        <span className="balanco-row-name">{c.nome}</span>
+                        <span>{fmt(c.valor)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                <div className="balanco-total">
+                  <span>Total do Ativo</span>
+                  <span>{fmt(BALANCO.ativo.total)}</span>
                 </div>
-              ))}
-              <div className="balanco-total">
-                <span>Total do Passivo + PL</span>
-                <span>{fmt(BALANCO.passivo.total)}</span>
+              </div>
+              <div>
+                <div className="balanco-group-title">PASSIVO + PATRIMÔNIO LÍQUIDO</div>
+                {BALANCO.passivo.grupos.map((grupo) => (
+                  <div key={grupo.nome} className="balanco-group">
+                    <div className="balanco-group-header" style={grupo.nome === "Patrimônio Líquido" ? { color: "#166534" } : undefined}>
+                      <span>{grupo.nome}</span>
+                      <span>{fmt(grupo.total)}</span>
+                    </div>
+                    {grupo.contas.map((c) => (
+                      <div key={c.codigo} className="balanco-row">
+                        <span className="balanco-row-name">{c.nome}</span>
+                        <span>{fmt(c.valor)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                <div className="balanco-total">
+                  <span>Total do Passivo + PL</span>
+                  <span>{fmt(BALANCO.passivo.total)}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ── NOTA DO CONTADOR (below 2-column grid) ── */}
-      <div className="nota">
-        <div className="nota-title">Nota do Contador</div>
-        <p>
-          O exercício de 2025 encerrou com resultados expressivos, com receita crescendo{" "}
-          {((r2025.receita - r2024.receita) / r2024.receita * 100).toFixed(1).replace(".", ",")}%
-          sobre 2024. EBITDA de {pct(r2025.ebitda, r2025.receita)} reflete eficiência operacional.
-          Patrimônio líquido de {fmt(BALANCO.passivo.grupos[2].total)} demonstra solidez com baixo endividamento.
-          Recomendamos manter a estratégia atual de reinvestimento e ampliação da capacidade de atendimento.
-        </p>
-      </div>
+        {/* NOTA */}
+        <div className="nota">
+          <div className="nota-title">Nota do Contador</div>
+          <p>
+            O exercício de 2025 encerrou com resultados expressivos, com receita crescendo{" "}
+            {((r2025.receita - r2024.receita) / r2024.receita * 100).toFixed(1).replace(".", ",")}%
+            sobre 2024. EBITDA de {pct(r2025.ebitda, r2025.receita)} reflete eficiência operacional.
+            Patrimônio líquido de {fmt(BALANCO.passivo.grupos[2].total)} demonstra solidez com baixo endividamento.
+            Recomendamos manter a estratégia atual de reinvestimento e ampliação da capacidade de atendimento.
+          </p>
+        </div>
 
-      {/* ── FOOTER ── */}
-      <div className="print-footer">
-        <span>Responsável: {CLIENTE.contadorNome} · {ESCRITORIO.nome} · {ESCRITORIO.email} · CNPJ {ESCRITORIO.cnpj}</span>
-        <span className="footer-brand">Gerado via Contabil 360 · {dataGeracao}</span>
-      </div>
+        {/* FOOTER */}
+        <div className="print-footer">
+          <span>Responsável: {CLIENTE.contadorNome} · {ESCRITORIO.nome} · {ESCRITORIO.email} · CNPJ {ESCRITORIO.cnpj}</span>
+          <span className="footer-brand">Gerado via Contabil 360 · {dataGeracao}</span>
+        </div>
 
-      <style>{`
-        @page { size: A4 landscape; margin: 12mm 14mm; }
+        <style>{`
+          @page { size: A4 landscape; margin: 12mm 14mm; }
 
-        .btn-voltar {
-          position: fixed;
-          top: 14px;
-          left: 16px;
-          background: #166534;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          padding: 8px 14px;
-          font-size: 13px;
-          font-weight: 500;
-          cursor: pointer;
-          z-index: 100;
-          font-family: 'Inter', -apple-system, sans-serif;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.18);
-        }
-        @media print { .btn-voltar { display: none; } }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          font-size: 9pt;
-          color: #111827;
-          background: #fff;
-          line-height: 1.4;
-        }
-
-        .print-page {
-          display: flex;
-          flex-direction: column;
-          min-height: 100vh;
-          padding: 0;
-        }
-
-        /* HEADER */
-        .print-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding-bottom: 6px;
-          border-bottom: 2px solid #166534;
-          margin-bottom: 10px;
-        }
-        .empresa-nome {
-          font-size: 12pt;
-          font-weight: 700;
-          color: #111827;
-          letter-spacing: -0.3px;
-        }
-        .empresa-sub {
-          font-size: 7pt;
-          color: #6B7280;
-          margin-top: 2px;
-        }
-        .header-right {
-          text-align: right;
-        }
-        .brand {
-          font-size: 10pt;
-          font-weight: 600;
-          color: #166534;
-          letter-spacing: -0.3px;
-        }
-        .brand-sub {
-          font-size: 7pt;
-          color: #6B7280;
-          margin-top: 1px;
-          font-weight: 500;
-          letter-spacing: 0.2px;
-        }
-
-        /* KPIs */
-        .kpi-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
-          margin-bottom: 10px;
-        }
-        .kpi-box {
-          border: 1px solid #E5E7EB;
-          border-radius: 5px;
-          padding: 7px 10px;
-          background: #F9FAFB;
-        }
-        .kpi-label {
-          font-size: 7pt;
-          font-weight: 500;
-          color: #6B7280;
-          text-transform: uppercase;
-          letter-spacing: 0.4px;
-          margin-bottom: 2px;
-        }
-        .kpi-value {
-          font-size: 11pt;
-          font-weight: 700;
-          color: #111827;
-          letter-spacing: -0.5px;
-        }
-        .kpi-sub {
-          font-size: 7pt;
-          color: #6B7280;
-          margin-top: 2px;
-        }
-
-        /* MAIN 2-COLUMN GRID */
-        .main-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          flex: 1;
-        }
-
-        /* SECTION TITLE */
-        .section-title {
-          font-size: 7.5pt;
-          font-weight: 600;
-          color: #111827;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          padding-bottom: 4px;
-          border-bottom: 1px solid #E5E7EB;
-          margin-bottom: 6px;
-        }
-
-        /* TABLE */
-        .report-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 8pt;
-        }
-        .report-table thead tr {
-          background: #F9FAFB;
-        }
-        .report-table th {
-          padding: 3px 6px;
-          text-align: right;
-          font-weight: 600;
-          color: #6B7280;
-          font-size: 7pt;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-          border-bottom: 1px solid #E5E7EB;
-        }
-        .report-table th.col-label { text-align: left; }
-        .report-table td {
-          padding: 3px 6px;
-          text-align: right;
-          border-bottom: 1px solid #F3F4F6;
-          color: #374151;
-        }
-        .col-label { text-align: left !important; color: #111827; }
-        .col-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .muted { color: #9CA3AF !important; }
-        .row-bold td {
-          font-weight: 600;
-          color: #111827;
-          background: #F9FAFB;
-          border-bottom: 1px solid #E5E7EB;
-        }
-
-        /* NOTA */
-        .nota {
-          background: #F9FAFB;
-          border: 1px solid #E5E7EB;
-          border-left: 3px solid #166534;
-          border-radius: 3px;
-          padding: 5px 10px;
-          margin-top: 10px;
-        }
-        .nota-title {
-          font-size: 7pt;
-          font-weight: 600;
-          color: #166534;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: 2px;
-        }
-        .nota p {
-          font-size: 8pt;
-          color: #374151;
-          line-height: 1.4;
-        }
-
-        /* BALANÇO */
-        .balanco-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-        .balanco-group-title {
-          font-size: 7pt;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          color: #6B7280;
-          margin-bottom: 5px;
-        }
-        .balanco-group {
-          margin-bottom: 6px;
-        }
-        .balanco-group-header {
-          display: flex;
-          justify-content: space-between;
-          font-size: 8pt;
-          font-weight: 600;
-          color: #111827;
-          padding: 2px 0;
-          border-bottom: 1px solid #E5E7EB;
-          margin-bottom: 2px;
-        }
-        .balanco-row {
-          display: flex;
-          justify-content: space-between;
-          font-size: 8pt;
-          color: #374151;
-          padding: 2px 6px;
-        }
-        .balanco-row-name { color: #6B7280; }
-        .balanco-total {
-          display: flex;
-          justify-content: space-between;
-          font-size: 8.5pt;
-          font-weight: 700;
-          color: #111827;
-          padding: 4px 0;
-          border-top: 2px solid #111827;
-          margin-top: 3px;
-        }
-
-        /* FOOTER */
-        .print-footer {
-          margin-top: 8px;
-          padding-top: 6px;
-          border-top: 1px solid #E5E7EB;
-          font-size: 7pt;
-          color: #9CA3AF;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .footer-brand {
-          color: #166534;
-          font-weight: 500;
-        }
-
-        @media print {
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .print-page { min-height: unset; }
-        }
-
-        @media screen {
-          body { background: #f5f5f5; padding: 24px 0; }
-          .print-page {
-            background: white;
-            max-width: 297mm;
-            margin: 0 auto;
-            padding: 12mm 14mm;
-            box-shadow: 0 1px 8px rgba(0,0,0,0.1);
-            border-radius: 4px;
-            min-height: 210mm;
+          body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 9pt;
+            color: #111827;
+            background: #fff;
+            line-height: 1.4;
           }
-        }
-      `}</style>
-    </div>
+
+          /* ── BOTÕES DE AÇÃO ── */
+          .screen-actions {
+            display: flex;
+            gap: 8px;
+          }
+          .btn-back {
+            background: white;
+            color: #6B7280;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Inter', -apple-system, sans-serif;
+          }
+          .btn-print {
+            background: #166534;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', -apple-system, sans-serif;
+          }
+
+          /* ── RESUMO MOBILE ── */
+          .mobile-summary { display: none; }
+
+          /* ── DESKTOP SCREEN ── */
+          @media screen and (min-width: 768px) {
+            body { background: #f5f5f5; padding: 56px 0 24px; }
+            .screen-actions { position: fixed; top: 12px; right: 16px; z-index: 100; }
+            .print-page {
+              background: white;
+              max-width: 297mm;
+              margin: 0 auto;
+              padding: 12mm 14mm;
+              box-shadow: 0 1px 8px rgba(0,0,0,0.1);
+              border-radius: 4px;
+              min-height: 210mm;
+            }
+          }
+
+          /* ── MOBILE SCREEN ── */
+          @media screen and (max-width: 767px) {
+            html, body {
+              background: #111827;
+              min-height: 100vh;
+              margin: 0;
+            }
+            body {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+              gap: 0;
+            }
+            .print-page { display: none; }
+            .screen-actions {
+              position: static;
+              flex-direction: column;
+              width: 100%;
+              max-width: 320px;
+              margin-top: 20px;
+              gap: 10px;
+            }
+            .btn-print {
+              padding: 14px 24px;
+              font-size: 15px;
+              border-radius: 10px;
+              text-align: center;
+              width: 100%;
+            }
+            .btn-back {
+              padding: 12px 24px;
+              font-size: 14px;
+              border-radius: 10px;
+              text-align: center;
+              width: 100%;
+              background: transparent;
+              color: #9CA3AF;
+              border-color: #374151;
+            }
+            .mobile-summary {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              width: 100%;
+              max-width: 320px;
+              gap: 4px;
+            }
+            .mobile-logo {
+              font-size: 11px;
+              font-weight: 600;
+              color: #166534;
+              letter-spacing: 0.5px;
+              text-transform: uppercase;
+              margin-bottom: 8px;
+            }
+            .mobile-empresa {
+              font-size: 17px;
+              font-weight: 700;
+              color: white;
+              letter-spacing: -0.3px;
+            }
+            .mobile-periodo {
+              font-size: 12px;
+              color: #6B7280;
+              margin-bottom: 20px;
+            }
+            .mobile-metrics {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              width: 100%;
+              margin-bottom: 16px;
+            }
+            .mobile-metric {
+              display: flex;
+              justify-content: space-between;
+              align-items: baseline;
+              border-bottom: 1px solid #1F2937;
+              padding-bottom: 10px;
+              gap: 8px;
+            }
+            .mobile-metric-label {
+              font-size: 12px;
+              color: #6B7280;
+              flex-shrink: 0;
+            }
+            .mobile-metric-value {
+              font-size: 15px;
+              font-weight: 600;
+              color: white;
+              font-variant-numeric: tabular-nums;
+            }
+            .mobile-metric-var {
+              font-size: 11px;
+              flex-shrink: 0;
+            }
+            .mobile-insight {
+              font-size: 12px;
+              color: #16A34A;
+              font-weight: 500;
+              text-align: center;
+              padding: 8px 12px;
+              border: 1px solid #166534;
+              border-radius: 6px;
+              margin-bottom: 4px;
+              width: 100%;
+            }
+          }
+
+          /* ── PRINT ── */
+          @media print {
+            .screen-actions { display: none !important; }
+            .mobile-summary { display: none !important; }
+            .print-page { display: flex !important; min-height: unset; }
+            body {
+              background: white !important;
+              padding: 0 !important;
+              display: block !important;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+          }
+
+          /* ── A4 CONTENT STYLES ── */
+          .print-page {
+            display: flex;
+            flex-direction: column;
+          }
+
+          .print-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #166534;
+            margin-bottom: 10px;
+          }
+          .empresa-nome { font-size: 12pt; font-weight: 700; color: #111827; letter-spacing: -0.3px; }
+          .empresa-sub { font-size: 7pt; color: #6B7280; margin-top: 2px; }
+          .header-right { text-align: right; }
+          .brand { font-size: 10pt; font-weight: 600; color: #166534; letter-spacing: -0.3px; }
+          .brand-sub { font-size: 7pt; color: #6B7280; margin-top: 1px; font-weight: 500; letter-spacing: 0.2px; }
+
+          .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+          .kpi-box { border: 1px solid #E5E7EB; border-radius: 5px; padding: 7px 10px; background: #F9FAFB; }
+          .kpi-label { font-size: 7pt; font-weight: 500; color: #6B7280; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+          .kpi-value { font-size: 11pt; font-weight: 700; color: #111827; letter-spacing: -0.5px; }
+          .kpi-sub { font-size: 7pt; color: #6B7280; margin-top: 2px; }
+
+          .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; }
+
+          .section-title { font-size: 7.5pt; font-weight: 600; color: #111827; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px; border-bottom: 1px solid #E5E7EB; margin-bottom: 6px; }
+
+          .report-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+          .report-table thead tr { background: #F9FAFB; }
+          .report-table th { padding: 3px 6px; text-align: right; font-weight: 600; color: #6B7280; font-size: 7pt; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #E5E7EB; }
+          .report-table th.col-label { text-align: left; }
+          .report-table td { padding: 3px 6px; text-align: right; border-bottom: 1px solid #F3F4F6; color: #374151; }
+          .col-label { text-align: left !important; color: #111827; }
+          .col-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+          .muted { color: #9CA3AF !important; }
+          .row-bold td { font-weight: 600; color: #111827; background: #F9FAFB; border-bottom: 1px solid #E5E7EB; }
+
+          .nota { background: #F9FAFB; border: 1px solid #E5E7EB; border-left: 3px solid #166534; border-radius: 3px; padding: 5px 10px; margin-top: 10px; }
+          .nota-title { font-size: 7pt; font-weight: 600; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+          .nota p { font-size: 8pt; color: #374151; line-height: 1.4; }
+
+          .balanco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+          .balanco-group-title { font-size: 7pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6B7280; margin-bottom: 5px; }
+          .balanco-group { margin-bottom: 6px; }
+          .balanco-group-header { display: flex; justify-content: space-between; font-size: 8pt; font-weight: 600; color: #111827; padding: 2px 0; border-bottom: 1px solid #E5E7EB; margin-bottom: 2px; }
+          .balanco-row { display: flex; justify-content: space-between; font-size: 8pt; color: #374151; padding: 2px 6px; }
+          .balanco-row-name { color: #6B7280; }
+          .balanco-total { display: flex; justify-content: space-between; font-size: 8.5pt; font-weight: 700; color: #111827; padding: 4px 0; border-top: 2px solid #111827; margin-top: 3px; }
+
+          .print-footer { margin-top: 8px; padding-top: 6px; border-top: 1px solid #E5E7EB; font-size: 7pt; color: #9CA3AF; display: flex; justify-content: space-between; align-items: center; }
+          .footer-brand { color: #166534; font-weight: 500; }
+        `}</style>
+      </div>
     </>
   );
 }
