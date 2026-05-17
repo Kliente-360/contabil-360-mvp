@@ -1,14 +1,56 @@
-import { TrendingUp, TrendingDown, DollarSign, BarChart2, MessageSquare, AlertTriangle, CalendarClock } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, BarChart2, MessageSquare, AlertTriangle, CalendarClock, Info } from "lucide-react";
 import { getKPIsMesAtual, DRE_MESES, TICKETS, EVENTOS_CALENDARIO } from "@/lib/mock-data";
-import { formatCurrencyCompact } from "@/lib/utils";
+import { formatCurrencyCompact, cn } from "@/lib/utils";
 import { EvolucaoChart } from "@/components/portal/evolucao-chart";
 import { MobileHeader } from "@/components/portal/mobile-header";
-import { agruparPorPeriodo } from "@/lib/analytics";
+import { agruparPorPeriodo, gerarInsight, type Insight } from "@/lib/analytics";
+
+const INSIGHT_ICONS = { TrendingUp, TrendingDown, AlertTriangle, Info } as const;
+
+const INSIGHT_BORDER: Record<Insight["tipo"], string> = {
+  elogio: "border-l-success",
+  atencao: "border-l-warning",
+  alerta: "border-l-error",
+  neutro: "border-l-border",
+};
+
+const INSIGHT_ICON_BG: Record<Insight["tipo"], string> = {
+  elogio: "bg-primary-light",
+  atencao: "bg-yellow-50",
+  alerta: "bg-red-50",
+  neutro: "bg-surface",
+};
+
+const INSIGHT_ICON_COLOR: Record<Insight["tipo"], string> = {
+  elogio: "text-success",
+  atencao: "text-warning",
+  alerta: "text-error",
+  neutro: "text-text-muted",
+};
+
+function NotaDoContador({ insight }: { insight: Insight }) {
+  const IconComponent = INSIGHT_ICONS[insight.icone];
+  return (
+    <div className="mb-4 md:mb-6">
+      <div className={cn("bg-white border border-border rounded-lg p-4 md:p-5 flex gap-4 border-l-4", INSIGHT_BORDER[insight.tipo])}>
+        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5", INSIGHT_ICON_BG[insight.tipo])}>
+          <IconComponent className={cn("w-4 h-4", INSIGHT_ICON_COLOR[insight.tipo])} />
+        </div>
+        <div>
+          <p className="text-xs font-medium text-text-muted mb-0.5 uppercase tracking-wider">Nota do Contador</p>
+          <p className="text-sm font-semibold text-text mb-1">{insight.titulo}</p>
+          <p className="text-sm text-text-muted leading-relaxed">{insight.descricao}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function InicioPage() {
   const kpis = getKPIsMesAtual();
   const ticketsAbertos = TICKETS.filter((t) => t.status !== "resolvido").length;
   const dadosEvolucao = agruparPorPeriodo(DRE_MESES.slice(-12), "mensal");
+  const insight = gerarInsight(DRE_MESES.slice(-12));
 
   const MES_ATUAL = "2026-05";
   const obrigacoesAberto = EVENTOS_CALENDARIO.filter(
@@ -96,6 +138,9 @@ export default function InicioPage() {
             );
           })}
         </div>
+
+        {/* Nota do Contador */}
+        <NotaDoContador insight={insight} />
 
         {/* Gráfico + resumo */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
