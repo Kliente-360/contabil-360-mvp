@@ -51,16 +51,6 @@ export default function PrintRelatorio() {
 
   return (
     <>
-      {/* ── AÇÕES (visíveis apenas na tela, ocultas no print) ── */}
-      <div className="screen-actions">
-        <button className="btn-back" onClick={() => window.history.back()}>
-          ← Voltar
-        </button>
-        <button className="btn-print" onClick={() => window.print()}>
-          Imprimir / Salvar PDF
-        </button>
-      </div>
-
       {/* ── RESUMO MOBILE (visível apenas em tela pequena) ── */}
       <div className="mobile-summary">
         <div className="mobile-logo">Contabil 360</div>
@@ -69,29 +59,39 @@ export default function PrintRelatorio() {
         <div className="mobile-metrics">
           <div className="mobile-metric">
             <span className="mobile-metric-label">Receita</span>
-            <span className="mobile-metric-value">{formatCurrencyCompact(r2025.receita)}</span>
-            <span className="mobile-metric-var" style={{ color: "#16A34A" }}>
-              +{((r2025.receita - r2024.receita) / r2024.receita * 100).toFixed(1).replace(".", ",")}% vs 2024
-            </span>
+            <div className="mobile-metric-right">
+              <span className="mobile-metric-value">{formatCurrencyCompact(r2025.receita)}</span>
+              <span className="mobile-metric-var" style={{ color: "#16A34A" }}>
+                +{((r2025.receita - r2024.receita) / r2024.receita * 100).toFixed(1).replace(".", ",")}% vs 2024
+              </span>
+            </div>
           </div>
           <div className="mobile-metric">
             <span className="mobile-metric-label">EBITDA</span>
-            <span className="mobile-metric-value">{formatCurrencyCompact(r2025.ebitda)}</span>
-            <span className="mobile-metric-var" style={{ color: "#6B7280" }}>
-              Margem {pct(r2025.ebitda, r2025.receita)}
-            </span>
+            <div className="mobile-metric-right">
+              <span className="mobile-metric-value">{formatCurrencyCompact(r2025.ebitda)}</span>
+              <span className="mobile-metric-var">Margem {pct(r2025.ebitda, r2025.receita)}</span>
+            </div>
           </div>
           <div className="mobile-metric">
             <span className="mobile-metric-label">Lucro Líquido</span>
-            <span className="mobile-metric-value">{formatCurrencyCompact(r2025.lucroLiquido)}</span>
-            <span className="mobile-metric-var" style={{ color: "#6B7280" }}>
-              Margem {pct(r2025.lucroLiquido, r2025.receita)}
-            </span>
+            <div className="mobile-metric-right">
+              <span className="mobile-metric-value">{formatCurrencyCompact(r2025.lucroLiquido)}</span>
+              <span className="mobile-metric-var">Margem {pct(r2025.lucroLiquido, r2025.receita)}</span>
+            </div>
           </div>
         </div>
-        <div className="mobile-insight">
-          {insight.titulo}
-        </div>
+        <div className="mobile-insight">{insight.titulo}</div>
+      </div>
+
+      {/* ── AÇÕES (visíveis apenas na tela, ocultas no print) ── */}
+      <div className="screen-actions">
+        <button className="btn-print" onClick={() => window.print()}>
+          Imprimir / Salvar PDF
+        </button>
+        <button className="btn-back" onClick={() => window.history.back()}>
+          ← Voltar
+        </button>
       </div>
 
       {/* ── DOCUMENTO A4 (preview desktop + output do print) ── */}
@@ -247,160 +247,143 @@ export default function PrintRelatorio() {
             line-height: 1.4;
           }
 
-          /* ── BOTÕES DE AÇÃO ── */
-          .screen-actions {
-            display: flex;
-            gap: 8px;
-          }
-          .btn-back {
-            background: white;
-            color: #6B7280;
-            border: 1px solid #E5E7EB;
-            border-radius: 6px;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            font-family: 'Inter', -apple-system, sans-serif;
-          }
-          .btn-print {
-            background: #166534;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 16px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Inter', -apple-system, sans-serif;
-          }
-
           /* ── RESUMO MOBILE ── */
           .mobile-summary { display: none; }
+
+          /* ── BOTÕES — base (desktop) ── */
+          .screen-actions { display: flex; gap: 8px; }
+          .btn-back {
+            background: white; color: #6B7280; border: 1px solid #E5E7EB;
+            border-radius: 6px; padding: 8px 14px; font-size: 13px;
+            font-weight: 500; cursor: pointer; font-family: 'Inter', -apple-system, sans-serif;
+          }
+          .btn-print {
+            background: #166534; color: white; border: none;
+            border-radius: 6px; padding: 8px 16px; font-size: 13px;
+            font-weight: 600; cursor: pointer; font-family: 'Inter', -apple-system, sans-serif;
+          }
 
           /* ── DESKTOP SCREEN ── */
           @media screen and (min-width: 768px) {
             body { background: #f5f5f5; padding: 56px 0 24px; }
             .screen-actions { position: fixed; top: 12px; right: 16px; z-index: 100; }
             .print-page {
-              background: white;
-              max-width: 297mm;
-              margin: 0 auto;
-              padding: 12mm 14mm;
-              box-shadow: 0 1px 8px rgba(0,0,0,0.1);
-              border-radius: 4px;
-              min-height: 210mm;
+              background: white; max-width: 297mm; margin: 0 auto;
+              padding: 12mm 14mm; box-shadow: 0 1px 8px rgba(0,0,0,0.1);
+              border-radius: 4px; min-height: 210mm;
             }
           }
 
           /* ── MOBILE SCREEN ── */
           @media screen and (max-width: 767px) {
-            html, body {
+            html { background: #111827; }
+            body {
               background: #111827;
               min-height: 100vh;
+              min-height: 100dvh;
               margin: 0;
-            }
-            body {
               display: flex;
               flex-direction: column;
-              align-items: center;
-              padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
-              gap: 0;
+              font-family: 'Inter', -apple-system, sans-serif;
             }
             .print-page { display: none; }
-            .screen-actions {
-              position: static;
-              flex-direction: column;
-              width: 100%;
-              max-width: 320px;
-              margin-top: 20px;
-              gap: 10px;
-            }
-            .btn-print {
-              padding: 14px 24px;
-              font-size: 15px;
-              border-radius: 10px;
-              text-align: center;
-              width: 100%;
-            }
-            .btn-back {
-              padding: 12px 24px;
-              font-size: 14px;
-              border-radius: 10px;
-              text-align: center;
-              width: 100%;
-              background: transparent;
-              color: #9CA3AF;
-              border-color: #374151;
-            }
+
+            /* Resumo ocupa o espaço disponível e empurra botões pro fundo */
             .mobile-summary {
               display: flex;
               flex-direction: column;
-              align-items: center;
-              text-align: center;
-              width: 100%;
-              max-width: 320px;
-              gap: 4px;
+              flex: 1;
+              padding: max(36px, env(safe-area-inset-top)) 24px 24px;
             }
             .mobile-logo {
-              font-size: 11px;
+              font-size: 10px;
               font-weight: 600;
               color: #166534;
-              letter-spacing: 0.5px;
+              letter-spacing: 1px;
               text-transform: uppercase;
-              margin-bottom: 8px;
+              margin-bottom: 12px;
             }
             .mobile-empresa {
-              font-size: 17px;
+              font-size: 22px;
               font-weight: 700;
-              color: white;
-              letter-spacing: -0.3px;
+              color: #FFFFFF;
+              letter-spacing: -0.5px;
+              line-height: 1.2;
+              margin-bottom: 4px;
             }
             .mobile-periodo {
-              font-size: 12px;
+              font-size: 13px;
               color: #6B7280;
-              margin-bottom: 20px;
+              margin-bottom: 32px;
             }
             .mobile-metrics {
               display: flex;
               flex-direction: column;
-              gap: 12px;
-              width: 100%;
-              margin-bottom: 16px;
+              border-top: 1px solid #1F2937;
+              margin-bottom: 20px;
             }
             .mobile-metric {
               display: flex;
               justify-content: space-between;
-              align-items: baseline;
+              align-items: center;
+              padding: 16px 0;
               border-bottom: 1px solid #1F2937;
-              padding-bottom: 10px;
-              gap: 8px;
             }
             .mobile-metric-label {
-              font-size: 12px;
+              font-size: 14px;
               color: #6B7280;
-              flex-shrink: 0;
+              font-weight: 500;
+            }
+            .mobile-metric-right {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              gap: 3px;
             }
             .mobile-metric-value {
-              font-size: 15px;
+              font-size: 17px;
               font-weight: 600;
-              color: white;
+              color: #FFFFFF;
               font-variant-numeric: tabular-nums;
             }
             .mobile-metric-var {
-              font-size: 11px;
-              flex-shrink: 0;
-            }
-            .mobile-insight {
               font-size: 12px;
+              color: #6B7280;
+            }
+            /* Insight fica colado embaixo das métricas */
+            .mobile-insight {
+              font-size: 13px;
               color: #16A34A;
               font-weight: 500;
-              text-align: center;
-              padding: 8px 12px;
+              padding: 12px 14px;
               border: 1px solid #166534;
-              border-radius: 6px;
-              margin-bottom: 4px;
+              border-radius: 8px;
+              line-height: 1.4;
+            }
+
+            /* Botões fixos no rodapé */
+            .screen-actions {
+              flex-direction: column;
+              padding: 16px 24px max(24px, env(safe-area-inset-bottom));
+              gap: 10px;
+            }
+            .btn-print {
+              padding: 16px;
+              font-size: 16px;
+              border-radius: 12px;
               width: 100%;
+              font-weight: 600;
+              text-align: center;
+            }
+            .btn-back {
+              padding: 14px;
+              font-size: 14px;
+              border-radius: 12px;
+              width: 100%;
+              text-align: center;
+              background: transparent;
+              color: #9CA3AF;
+              border: 1px solid #374151;
             }
           }
 
