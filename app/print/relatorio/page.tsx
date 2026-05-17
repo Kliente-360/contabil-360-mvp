@@ -41,7 +41,13 @@ export default function PrintRelatorio() {
 
   useEffect(() => {
     const timer = setTimeout(() => window.print(), 800);
-    return () => clearTimeout(timer);
+    // afterprint não é suportado no iOS Safari — botão "Voltar" cobre esse caso
+    const afterPrint = () => window.history.back();
+    window.addEventListener("afterprint", afterPrint);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("afterprint", afterPrint);
+    };
   }, []);
 
   const linhasDRE = [
@@ -55,6 +61,10 @@ export default function PrintRelatorio() {
   ];
 
   return (
+    <>
+    <button className="btn-voltar" onClick={() => window.history.back()}>
+      ← Voltar
+    </button>
     <div className="print-page">
       {/* ── HEADER ── */}
       <div className="print-header">
@@ -255,6 +265,24 @@ export default function PrintRelatorio() {
 
       <style>{`
         @page { size: A4 landscape; margin: 12mm 14mm; }
+
+        .btn-voltar {
+          position: fixed;
+          top: 14px;
+          left: 16px;
+          background: #166534;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          padding: 8px 14px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          z-index: 100;
+          font-family: 'Inter', -apple-system, sans-serif;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+        }
+        @media print { .btn-voltar { display: none; } }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -503,5 +531,6 @@ export default function PrintRelatorio() {
         }
       `}</style>
     </div>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, FileDown, Share2 } from "lucide-react";
 import { cn, formatCurrency, formatCurrencyCompact, formatCompetencia } from "@/lib/utils";
@@ -152,6 +153,7 @@ function acumularDados(dados: PeriodoAgrupado[]): PeriodoAgrupado[] {
 }
 
 export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
+  const router = useRouter();
   const [aba, setAba] = useState("dre");
   const [periodo, setPeriodo] = useState<Periodo>("mensal");
   const [acumulado, setAcumulado] = useState(false);
@@ -177,14 +179,7 @@ export function RelatoriosTabs({ dreDetalhe, dreMeses, balanco }: Props) {
   }, [dreMeses]);
 
   function handleExport() {
-    const iframe = document.createElement("iframe");
-    iframe.src = "/print/relatorio";
-    iframe.style.cssText = "position:fixed;width:0;height:0;opacity:0;border:none;";
-    document.body.appendChild(iframe);
-    iframe.onload = () => {
-      iframe.contentWindow?.print();
-      setTimeout(() => document.body.removeChild(iframe), 2000);
-    };
+    router.push("/print/relatorio");
   }
 
   function handleShare() {
